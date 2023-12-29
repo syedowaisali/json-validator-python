@@ -26,7 +26,7 @@ class __DataType:
                 self.array}
 
 
-data_type = __DataType()
+data_type_cls = __DataType()
 
 
 class ReservedKey:
@@ -38,10 +38,12 @@ class ReservedKey:
         self.allow_space = "__allow_space__"
         self.min_length = "__min_length__"
         self.max_length = "__max_length__"
+        self.min_value = "__min_value__"
+        self.max_value = "__max_value__"
         self.upper = "__upper__"
         self.lower = "__lower__"
         self.bypass = "__bypass__"
-        self.depend_on = "__depend_on__"
+        self.binder = "__binder__"
 
     def all_keys(self) -> dict:
         return {self.required: bool,
@@ -50,49 +52,80 @@ class ReservedKey:
                 self.allow_space: bool,
                 self.min_length: int,
                 self.max_length: int,
+                self.min_value: float,
+                self.max_value: float,
                 self.upper: bool,
                 self.lower: bool,
                 self.bypass: bool,
-                self.depend_on: str}
+                self.binder: dict}
 
 
 reserved_key = ReservedKey()
+
+def converted_type(field):
+    field_type = field if type(field) is type else type(field)
+    if field_type is str:
+        return data_type_cls.string
+    elif field_type is int:
+        return data_type_cls.integer
+    elif field_type is float:
+        return data_type_cls.float
+    elif field_type is bool:
+        return data_type_cls.bool
+    elif field_type is dict:
+        return data_type_cls.object
+    elif field_type is list and len(field) > 0:
+        first_item_type = type(field[0])
+
+        for i in field:
+            if type(i) is not first_item_type:
+                return data_type_cls.array
+
+        if first_item_type is dict:
+            return data_type_cls.object_array
+        elif first_item_type is str:
+            return data_type_cls.string_array
+        elif first_item_type is int:
+            return data_type_cls.integer_array
+        elif first_item_type is float:
+            return data_type_cls.float_array
+        elif first_item_type is bool:
+            return data_type_cls.bool_array
+    elif field_type is list:
+        return "array"
+
+
 
 
 def remove_reserved_keys(doc):
     return [k for k in doc.keys() if k not in reserved_key.all_keys().keys()]
 
 
+def is_find_data_type(source: str, target: list) -> bool:
+    for dt in source.split("|"):
+        if dt in target:
+            return True
+
+    return False
+
+
+def is_exact_match_data_type(source: str, target: list) -> bool:
+    for dt in source.split("|"):
+        if dt not in target:
+            return False
+
+    return True
+
+
 def matching_data_type(key, dt, target):
-    return {converted_type(target[key])}.intersection(dt.split("|"))
+    return dt == data_type_cls.array and dt in converted_type(target[key]) or {converted_type(target[key])}.intersection(dt.split("|"))
 
 
-def converted_type(field):
-    field_type = field if type(field) is type else type(field)
-    if field_type is str:
-        return data_type.string
-    elif field_type is int:
-        return data_type.integer
-    elif field_type is float:
-        return data_type.float
-    elif field_type is bool:
-        return data_type.bool
-    elif field_type is dict:
-        return data_type.object
-    elif field_type is list and len(field) > 0:
-        first_item_type = type(field[0])
 
-        for i in field:
-            if type(i) is not first_item_type:
-                return data_type.array
+def read_file(file_path):
+    with open(file_path, "r") as file:
+        return file.read()
 
-        if first_item_type is dict:
-            return data_type.object_array
-        elif first_item_type is str:
-            return data_type.string_array
-        elif first_item_type is int:
-            return data_type.integer_array
-        elif first_item_type is float:
-            return data_type.float_array
-        elif first_item_type is bool:
-            return data_type.bool_array
+
+def read_rules(file_path="config/rules.json"):
+    return read_file(file_path)

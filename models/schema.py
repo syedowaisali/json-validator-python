@@ -1,4 +1,4 @@
-from util import reserved_key
+from utils.util import reserved_key
 
 
 class Schema:
@@ -12,6 +12,10 @@ class Schema:
 
         if type(val) is dict:
             self.data_type = val.get("__data_type__") #"string" if "__data_type__" not in val else val.get("__data_type__")
+            self.min_value = val.get("__min_value__") #"string" if "__data_type__" not in val else val.get("__data_type__")
+            self.max_value = val.get("__max_value__") #"string" if "__data_type__" not in val else val.get("__data_type__")
+            self.min_length = val.get("__min_length__") #"string" if "__data_type__" not in val else val.get("__data_type__")
+            self.max_length = val.get("__max_length__") #"string" if "__data_type__" not in val else val.get("__data_type__")
             self.can_bypass = val.get("__bypass__") #False if "__bypass__" not in val else val.get("__bypass__")
             self.binding = val.get("__bind__")
 
@@ -23,4 +27,4 @@ class Schema:
         return self.child_schema.get(key)
 
 
-schema_map = {}
+schema_doc = {}

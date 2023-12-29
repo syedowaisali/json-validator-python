@@ -1,13 +1,18 @@
 import re
 
+from config.rules import rules
+from validations import doc_validation_set, schema_validation_set
+from utils.logger import logger
 from config import root_object_path
-from formatter import normalize_path
-from logger import logger
-from rules import rules
-import schema_map
-from doc_validations import doc_validation_set
-from schema_validations import schema_validation_set
-from util import remove_reserved_keys, reserved_key
+from models.schema import Schema, schema_doc
+
+from utils.util import remove_reserved_keys, reserved_key, data_type_cls
+
+
+def normalize_path(path: str, index: int = 0, doc_is_dynamic: bool = False) -> str:
+    path = path.replace(root_object_path, "") if len(path) > len(root_object_path) else path
+    path = path[1:] if path.startswith(".") else path
+    return f"root[{index}]{path}" if doc_is_dynamic and "root" not in path else path
 
 
 def filter_key(key):
@@ -67,33 +72,32 @@ def analyze_schema(schema, loc):
         #      analyze_schema(child_schema, item, f"{loc}.{key}[{index}]")
 
 
-def is_valid_json(doc) -> bool:
-    return True
-
-
-def apply_validation(key, schema, target, path):
-    path = normalize_path(path)
-    tgt_value = target.get(key)
+def apply_doc_validation(key, schema, doc, path, index, doc_is_dynamic):
+    path = normalize_path(path, index, doc_is_dynamic)
+    doc_value = doc.get(key)
     sch_value = schema.get(key) if schema is not None else None
 
     if key is None:
-        for tgt_key in target.keys():
-            apply_validation(tgt_key, schema, target, path)
+        for tgt_key in doc.keys():
+            apply_doc_validation(tgt_key, schema, doc, path, index, doc_is_dynamic)
         return
 
     for validation in doc_validation_set:
-        if schema is not None and validation.validate(key, schema, target, normalize_path(f"{path}.{key}")) is not None:
+        if schema is not None and validation.validate(key, schema, doc,
+                                                      normalize_path(f"{path}.{key}", index, doc_is_dynamic), index,
+                                                      doc_is_dynamic) is not None:
             return
 
-    if type(tgt_value) is dict:
-        for child_key in tgt_value.keys():
-            apply_validation(child_key, sch_value, tgt_value, normalize_path(f"{path}.{key}"))
+    if type(doc_value) is dict:
+        for child_key in doc_value.keys():
+            apply_doc_validation(child_key, sch_value, doc_value,
+                                 normalize_path(f"{path}.{key}", index, doc_is_dynamic), index, doc_is_dynamic)
 
-    if type(tgt_value) is list:
-        for index, item in enumerate(tgt_value):
+    if type(doc_value) is list:
+        for i, item in enumerate(doc_value):
             if type(item) is dict:
                 for child_key in item.keys():
-                    apply_validation(child_key, sch_value, item, f"{path}.{key}[{index}]")
+                    apply_doc_validation(child_key, sch_value, item, f"{path}.{key}[{i}]", index, doc_is_dynamic)
 
 
 def apply_schema_validation(key, schema, path):
@@ -145,26 +149,87 @@ def update_schema(schema: dict, updated_schema: dict, key=None):
         updated_schema[key] = schema.get(key)
 
 
-def validate(schema, target):
-    # checking schema is valid json document
-    is_valid_json(schema)
+def is_dynamic_document(document: list) -> bool:
+    first_item_type = type(document[0])
+    is_dynamic_array = False
 
-    # checking target is a valid json document
-    is_valid_json(target)
+    for item in document:
+        if type(item) is not first_item_type:
+            is_dynamic_array = True
 
+    return is_dynamic_array
+
+
+def check_root_data_type(schema: dict, expected_type: str):
+    data_type = schema.get(reserved_key.data_type)
+
+    if data_type != expected_type:
+        logger.error(
+            f"expected (bold)(blue){expected_type}(end) type but found (bold)(blue){data_type}(end) type in the document.")
+
+
+def validate_min_length(schema: dict, document: list):
+    min_length = schema.get(reserved_key.min_length)
+    if min_length is not None and len(document) < int(min_length):
+        logger.error(f"the document could contain a minimum (bold){min_length}(end) item(s).")
+
+
+def validate_max_length(schema: dict, document: list):
+    max_length = schema.get(reserved_key.max_length)
+    if max_length is not None and len(document) > int(max_length):
+        logger.error(f"the document could contain a maximum (bold){max_length}(end) item(s).")
+
+
+def run_doc_validations(schema: dict, document):
+    # target document comprises on a single object
+    if type(document) is dict:
+        apply_doc_validation(None, schema_doc, document, root_object_path, 0, False)
+
+    # target document comprises on a array
+    elif len(document) > 0:
+
+        # when document is dynamic
+        if is_dynamic_document(document):
+            check_root_data_type(schema, "array")
+
+        # when document is not dynamic
+        elif type(document[0]) is dict:
+            for index, doc in enumerate(document):
+                apply_doc_validation(None, schema_doc, doc, root_object_path, index, True)
+
+        elif type(document[0]) is str:
+            check_root_data_type(schema, data_type_cls.string_array)
+
+        elif type(document[0]) is int:
+            check_root_data_type(schema, data_type_cls.integer_array)
+
+        elif type(document[0]) is float:
+            check_root_data_type(schema, data_type_cls.float_array)
+
+        elif type(document[0]) is bool:
+            check_root_data_type(schema, data_type_cls.bool_array)
+
+        validate_min_length(schema, document)
+        validate_max_length(schema, document)
+
+    else:
+        logger.error("the document couldn't be empty.")
+
+
+def validate(schema, document):
     # remove * from keys and add __required__ key in field object
     updated_schema = {}
     update_schema(schema, updated_schema)
 
     for key in {key: val for (key, val) in updated_schema.items()}:
-        schema_map.schema_map[key] = schema_map.Schema(key, updated_schema[key])
+        schema_doc[key] = Schema(key, updated_schema[key])
 
     # adding separator and initial info
     logger.line_separator()
     logger.info("(bold)Validating... schema.(end)", line_separator=True)
 
     # validating schema first then document
-    apply_schema_validation(None, schema_map.schema_map, root_object_path)
+    apply_schema_validation(None, schema_doc, root_object_path)
 
     # if schema has no error then validate the target document with schema
     if len(logger.error_set) == 0:
@@ -172,16 +237,14 @@ def validate(schema, target):
         logger.success("(bold)(green)Schema validated.(end)", line_separator=True)
         logger.info("(bold)Validating... document.(end)", line_separator=True)
 
-        apply_validation(None, schema_map.schema_map, target, root_object_path)
+        run_doc_validations(schema, document)
 
         if logger.has_no_error():
             logger.success("Document validated.")
 
+    if not logger.has_no_error():
+        logger.error("Failed")
+
     logger.line_separator()
 
-    # analyze_schema(schema, "")
 
-    # if len(logger.error_list) == 0:
-    # detect_invalid_keys(schema, impl, "")
-    # for key in schema.keys():
-    # validate_key(key, schema, impl, "")

@@ -1,8 +1,8 @@
 import re
 
 from validations.validation import Validation
-from rules import rules
-from logger import logger
+from config.rules import rules
+from utils.logger import logger
 
 
 class RequiredFieldValidation(Validation):

@@ -2,8 +2,8 @@ import re
 
 from formatter import normalize_path
 from validations.validation import Validation
-from rules import rules
-from logger import logger
+from config.rules import rules
+from utils.logger import logger
 
 
 def converted_type(field):

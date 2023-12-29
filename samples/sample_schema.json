@@ -1,0 +1,28 @@
+{
+    "cart": {
+        "__data_type__": "object",
+        "items*": {
+            "__data_type__": "object_array",
+            "title*": {},
+            "description": {},
+            "category*": {
+              "__bind__": "category"
+            },
+            "provider*": {
+              "__bind__": "company"
+            },
+            "quantity*": {
+                "__data_type__": "integer",
+                "__min_value__": 1
+            },
+            "discount*": {
+                "__data_type__": "float",
+                "__max_value__": 45.5
+            }
+        }
+    },
+    "__binder__": {
+        "category": ["Health", "Fashion", "Lifestyle"],
+        "company": "Uniliver"
+    }
+}

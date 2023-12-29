@@ -1,4 +1,4 @@
-from reader import read_rules
+from utils.util import read_rules
 import json
 
 

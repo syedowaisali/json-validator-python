@@ -1,0 +1,21 @@
+{
+    "cart": {
+      "items": [
+        {
+          "title": "Product 1",
+          "description": "",
+          "quantity": 1,
+          "category": "Fashion",
+          "provider": "Uniliver",
+          "discount": 30.0
+        },
+        {
+          "title": "Product 2",
+          "quantity": 4,
+          "category": "Health",
+          "provider": "Uniliver",
+          "discount": 0.0
+        }
+      ]
+    }
+}

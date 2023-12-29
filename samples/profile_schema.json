@@ -1,8 +1,6 @@
 {
   "appId*": {},
   "configType*": {
-    "__min_length__": 3,
-    "__max_length__": "",
     "__allow_space__": true
   },
   "id": {
@@ -14,7 +12,7 @@
     "baseResource*": {
       "__data_type__": "object",
       "resource*": {
-        "__bind__": "user"
+        "__bind__": "fhir_resources"
       }
     },
     "relatedResources*": {
@@ -567,7 +565,6 @@
     }
   },
   "__binder__": {
-    "user": 3,
     "fhir_resources": [
       "Account",
       "ActivityDefinition",
