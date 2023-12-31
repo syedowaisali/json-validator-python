@@ -2,6 +2,57 @@
 
 **JSON Validator** is a powerful Python library designed to simplify and enhance the validation of JSON documents by providing a robust schema-based validation mechanism. With this library, you can create custom schemas to define the structure and constraints of your JSON data, ensuring it meets specific criteria.
 
+## Overview
+
+**JSON Validator** is a feature-rich Python library designed to elevate the validation of JSON documents by offering an extensive schema-based validation system. It empowers developers to define custom schemas, providing fine-grained control over the structure, data types, and constraints of their JSON data.
+
+## Key Features
+
+### 1. Schema Definition
+
+Define a schema for your JSON documents, specifying keys, data types, and constraints. The schema acts as a blueprint for validation.
+
+### 2. Flexible Data Type Validation
+
+Control the data types of each key in your JSON document. Enforce strict typing or allow flexibility based on your requirements.
+
+### 3. Key Presence Validation
+
+Detect and handle invalid keys in your JSON document that are not defined in the schema, ensuring data integrity.
+
+### 4. Required and Optional Fields
+
+Designate which fields are required and which are optional, guiding users in creating valid JSON documents.
+
+### 5. Child Value Bypass
+
+Allow bypassing the validation of child values, providing flexibility when certain sections of the JSON document don't require strict validation.
+
+### 6. Value Bindings
+
+Support value bindings to establish relationships between different parts of the JSON document, enhancing the expressiveness of your schemas.
+
+### 7. String Value Constraints
+
+Control the minimum and maximum length of string values, applying constraints to ensure data meets specific length requirements.
+
+### 8. Numeric Value Constraints
+
+Define minimum and maximum values for integer and float types, allowing precise control over the numeric range of your data.
+
+### 9. Case Constraints
+
+Apply case constraints to string types, specifying whether they should be in lower, upper, or mixed case.
+
+### 10. Spacing in String Values
+
+Optionally allow spacing in string data types, enhancing readability in scenarios where formatted text is essential.
+
+### 11. Custom Extension Library
+
+Extend the functionality of the library by creating custom extensions, tailoring the validation process to your unique needs.
+
+
 ### Features
 - Detect invalid keys that are not defined in the schema.
 - Control data type on each key.
