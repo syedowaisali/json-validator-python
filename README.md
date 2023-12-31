@@ -1,6 +1,9 @@
-## JSON Validator
+# JSON Validator
 
-**JSON Validator** is a powerful Python library designed to simplify and enhance the validation of JSON documents by providing a robust schema-based validation mechanism. With this library, you can create custom schemas to define the structure and constraints of your JSON data, ensuring it meets specific criteria.
+[![GitHub license](https://img.shields.io/github/license/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/blob/main/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/issues)
+[![GitHub stars](https://img.shields.io/github/stars/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/network)
 
 ## Overview
 
@@ -51,19 +54,6 @@ Optionally allow spacing in string data types, enhancing readability in scenario
 ### 11. Custom Extension Library
 
 Extend the functionality of the library by creating custom extensions, tailoring the validation process to your unique needs.
-
-
-### Features
-- Detect invalid keys that are not defined in the schema.
-- Control data type on each key.
-- Allow required and optional fields.
-- Allow bypass of the child value.
-- Support value bindings.
-- Allow spacing in value. note: this will work only with **string** data type, default is false.
-- Control minimum and maximum length in **string** and **array** types.
-- Control minimum and maximum value in **integer** and **float** types.
-- Apply lower and upper case constraints on a **string** type.
-- Allow to create a custom extension library.
 
 ### Installation
 ```commandline
