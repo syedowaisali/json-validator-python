@@ -5,6 +5,33 @@
 [![GitHub stars](https://img.shields.io/github/stars/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/network)
 
+## Outline
+
+1. [Overview](#overview)
+2. [Key Features](#key-features)
+   - [Schema Definition](#1-schema-definition)
+   - [Flexible Data Type Validation](#2-flexible-data-type-validation)
+   - [Key Presence Validation](#3-key-presence-validation)
+   - [Required and Optional Fields](#4-required-and-optional-fields)
+   - [Child Value Bypass](#5-child-value-bypass)
+   - [Value Bindings](#6-value-bindings)
+   - [String Value Constraints](#7-string-value-constraints)
+   - [Numeric Value Constraints](#8-numeric-value-constraints)
+   - [Case Constraints](#9-case-constraints)
+   - [Spacing in String Values](#10-spacing-in-string-values)
+   - [Custom Extension Library](#11-custom-extension-library)
+3. [Installation](#installation)
+4. [Documentation](#documentation)
+5. [Command line guide](#command-line-guide)
+6. [How to use](#how-to-use)
+7. [Use in Project](#use-in-project)
+8. [Control Configs](#control-configs)
+9. [Register Custom Validation Filters](#register-custom-validation-filters)
+10. [User guide](#user-guide)
+11. [Available Keywords](#available-keywords)
+12. [Support Data Types](#support-data-types)
+13. [License](#license)
+
 ## Overview
 
 **JSON Validator** is a feature-rich Python library designed to elevate the validation of JSON documents by offering an extensive schema-based validation system. It empowers developers to define custom schemas, providing fine-grained control over the structure, data types, and constraints of their JSON data.
@@ -59,7 +86,7 @@ Extend the functionality of the library by creating custom extensions, tailoring
 ```commandline
 install pip jsvl
 ```
-#### How to use
+### Command line guide
 List of available commands
 
 | Command        | Definition                                                                                                                                                                                                                            |
@@ -98,7 +125,7 @@ Remove formatting from the output.
 ~$ python jsvl -s path/to/schema.json -i /path/to/document.json --plain-output
 ```
 
-### In Project:
+### Use in Project:
 
 Import **validator** function from **jsvl.core** module and validate the document with multiple options.
 ```python
@@ -113,7 +140,7 @@ document = "path/to/document.json" or "path/to/all_documents_dir/" or {} or []
 # perform validation
 validator.validate(schema, document)
 ```
-#### Control Configs:
+### Control Configs:
 
 ```python
 from jsvl.config import configs, enable_output_tags, formatted_output
@@ -124,7 +151,7 @@ configs[enable_output_tags] = False
 # disable formatted output. default is True
 configs[formatted_output] = False
 ```
-#### Register Custom Validation Filters:
+### Register Custom Validation Filters:
 
 You can register two types of validation filter.
 1. **Schema Validation**
@@ -155,7 +182,7 @@ class CustomDocValidation(DocValidation):
 doc_validation_set.add(CustomCheckForDocValidation())
 
 ```
-#### User guide
+### User guide
 Validating a sample document.
 
 > **schema.json**
@@ -233,7 +260,7 @@ Validating a sample document.
 |    **\__bind\__**    | Bind value from defined binder valueset.                                                                                                                                                                             |  ```none```  |
 |   **\__binder\__**   | This is a special keyword and will be used only root object of the schema where you can define binding valueset.                                                                                                     |   ```none```    |
 
-### Data Types
+### Support Data Types
 
 - ```string```
 - ```integer```
