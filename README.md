@@ -1,4 +1,6 @@
-## Features
+## JSON Validator
+
+**JSON Validator** is a powerful Python library designed to simplify and enhance the validation of JSON documents by providing a robust schema-based validation mechanism. With this library, you can create custom schemas to define the structure and constraints of your JSON data, ensuring it meets specific criteria.
 
 ### Features
 - Detect invalid keys that are not defined in the schema.
@@ -6,10 +8,10 @@
 - Allow required and optional fields.
 - Allow bypass of the child value.
 - Support value bindings.
-- Allow spacing in value. note: this will work only **string** data-type, default is false.
-- Control minimum and maximum length in **string** and **array** type.
-- Control minimum and maximum value in **integer** and **float** type.
-- Apply lower and upper case constraint on **string** type.
+- Allow spacing in value. note: this will work only with **string** data type, default is false.
+- Control minimum and maximum length in **string** and **array** types.
+- Control minimum and maximum value in **integer** and **float** types.
+- Apply lower and upper case constraints on a **string** type.
 - Allow to create a custom extension library.
 
 ### Installation
@@ -19,13 +21,13 @@ install pip jsvl
 #### How to use
 List of available commands
 
-| Command        | Definition                                                                                                                                                                                                                           |
-|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -h or --help   | for help                                                                                                                                                                                                                             |
-| -s or --schema | provide a schema file path or url that will be used to analyze the input json<br />Note. if the provided input is a directory then you can also provide the schema path as a directory. All schema file should have _schema postfix. | 
-| -i or --input  | provide a directory or a single json file path that you want to analyze.<br/>Note: if the input source is a directory then provided schema should be in a directory and should have the same name with _schema postfix.              |
-| --disable-tags | pass this flag to disable the informative tags from output log.                                                                                                                                                                      |
-| --plain-output | pass this flag to disable the formatted output.                                                                                                                                                                                      |
+| Command        | Definition                                                                                                                                                                                                                            |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -h or --help   | for help.                                                                                                                                                                                                                             |
+| -s or --schema | provide a schema file path or URL that will be used to analyze the input json<br />Note. if the provided input is a directory then you can also provide the schema path as a directory. All schema files should have _schema postfix. | 
+| -i or --input  | provide a directory or a single json file path that you want to analyze.<br/>Note: if the input source is a directory then provided schema should be in a directory and should have the same name with _schema postfix.               |
+| --disable-tags | pass this flag to disable the informative tags from the output log.                                                                                                                                                                   |
+| --plain-output | pass this flag to disable the formatted output.                                                                                                                                                                                       |
 
 ### How to use
 **Command line**
@@ -34,7 +36,7 @@ Validate a single json document.
 ```commandline
 ~$ python jsvl -s /path/to/schema.json -i /path/to/document.json
 ```
-Validate multiple documents with single schema.
+Validate multiple documents with a single schema.
 ```commandline
 ~$ python jsvl -s /path/to/schema.json -i /path/to/documents/
 ```
@@ -174,21 +176,21 @@ Validating a sample document.
 ```
 ### Available keywords:
 
-|       Keyword        | Description                                                                                                                                                                                                         |   Default    |
-|:--------------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------:|
-|       <b>*</b>       | Add asterisk keyword to end of the key to mark it as required.                                                                                                                                                      | ```false```  |
-|        **~**         | Add tilde keyword to start of the key to ignore all the validation of immediate child.                                                                                                                              |  ```none```  |
-| **\__data_type\__**  | Set data type on field, multiple data type could be supply using \| for example. ```string```\|  ```object```                                                                                                       | ```string``` |
-| **\__alow_space\__** | Allow space on value, this keyword only applicable on ```string``` data type                                                                                                                                        |  ```true```  |
-| **\__min_length\__** | Set minimum length of ```string``` and any type of ```array``` data type.                                                                                                                                           |  ```none```  |
-| **\__max_length\__** | set maximum length of ```string``` and and type of ```array``` data type                                                                                                                                            |  ```none```  |
-| **\__min_value\__**  | Set minimum value of ```integer``` and ```float``` data type.                                                                                                                                                       |  ```none```  |
-| **\__max_value\__**  | Set maximum value of ```integer``` and ```float``` data type.                                                                                                                                                       |  ```none```  |
-|   **\__upper\__**    | Apply uppercase constraint on value, applicable only ```string``` data type, and if both ```__upper__``` and ```__lower__``` constraints are defined then ```__upper__``` will take precedence over ```__lower__``` | ```false```  |
-|   **\__lower\__**    | Apply lowercase constraint on value, applicable only ```string``` data type.                                                                                                                                        | ```false```  |
-|   **\__bypass\__**   | Ignore the validation of imediate child.                                                                                                                                                                            |  ```none```  |
-|    **\__bind\__**    | Bind value from defined set                                                                                                                                                                                         |  ```none```  |
-|   **\__binder\__**   | This is a special keyword and will be used only root object of schema and where you can define binding valueset.                                                                                                    |   ```none```    |
+|       Keyword        | Description                                                                                                                                                                                                          |   Default    |
+|:--------------------:|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------:|
+|       <b>*</b>       | Add an asterisk keyword to the end of the key to mark it as required.                                                                                                                                                       | ```false```  |
+|        **~**         | Add a tilde keyword to the start of the key to ignore all the validation of the immediate child.                                                                                                                               |  ```none```  |
+| **\__data_type\__**  | Set data type on field, multiple data types could be supplied using \| for example. ```string```\|  ```object```.                                                                                                        | ```string``` |
+| **\__alow_space\__** | Allow space on value, this keyword is only applicable on ```string``` data type.                                                                                                                                        |  ```true```  |
+| **\__min_length\__** | Set the minimum length of ```string``` and any type of ```array``` data type.                                                                                                                                        |  ```none```  |
+| **\__max_length\__** | Set the maximum length of ```string``` and any type of ```array``` data type.                                                                                                                                        |  ```none```  |
+| **\__min_value\__**  | Set the minimum value of ```integer``` and ```float``` data types.                                                                                                                                                   |  ```none```  |
+| **\__max_value\__**  | Set the maximum value of ```integer``` and ```float``` data types.                                                                                                                                                   |  ```none```  |
+|   **\__upper\__**    | Apply uppercase constraint on value, applicable only ```string``` data type, and if both ```__upper__``` and ```__lower__``` constraints are defined then ```__upper__``` will take precedence over ```__lower__```. | ```false```  |
+|   **\__lower\__**    | Apply lowercase constraint on value, applicable only ```string``` data type.                                                                                                                                         | ```false```  |
+|   **\__bypass\__**   | Ignore the validation of the immediate child.                                                                                                                                                                        |  ```none```  |
+|    **\__bind\__**    | Bind value from defined binder valueset.                                                                                                                                                                             |  ```none```  |
+|   **\__binder\__**   | This is a special keyword and will be used only root object of the schema where you can define binding valueset.                                                                                                     |   ```none```    |
 
 ### Data Types
 

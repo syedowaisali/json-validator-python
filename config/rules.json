@@ -7,11 +7,11 @@
       "at_least_one_message": "(bold)(blue){source}(end) should have at least one (bold)object(end)."
     },
     "__data_type__": {
-      "invalid": "in schema (bold)(blue){source}(end) has invalid data type (bold)(red){datatype}(end). See the available data-types here http://www.google.com",
+      "invalid": "in schema (bold)(blue){source}(end) has invalid data type (bold)(red){datatype}(end). See the available data-types here https://github.com/syedowaisali/json-validator-python?tab=readme-ov-file#data-types",
       "not_match": "(bold)(blue){source}(end) expect {valid_data_type} data type, but found (bold)(red){target_data_type}(end)."
     },
     "__binder__": {
-      "not_found": "(bold)(blue)__binder__(end) object not found in schema. see http://repo.com/add-boundary for more detail.",
+      "not_found": "(bold)(blue)__binder__(end) object not found in schema. see https://github.com/syedowaisali/json-validator-python?tab=readme-ov-file#available-keywords for more detail.",
       "missing": "(bold)(red){binding}(end) key is not found in (bold)__binder__(end) object."
     }
   },
