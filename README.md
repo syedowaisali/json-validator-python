@@ -7,8 +7,8 @@
 
 ## Outline
 
-1. [Overview](#overview)
-2. [Key Features](#key-features)
+- [Overview](#overview)
+- [Key Features](#key-features)
    - [Schema Definition](#1-schema-definition)
    - [Flexible Data Type Validation](#2-flexible-data-type-validation)
    - [Key Presence Validation](#3-key-presence-validation)
@@ -20,17 +20,16 @@
    - [Case Constraints](#9-case-constraints)
    - [Spacing in String Values](#10-spacing-in-string-values)
    - [Custom Extension Library](#11-custom-extension-library)
-3. [Installation](#installation)
-4. [Documentation](#documentation)
-5. [Command line guide](#command-line-guide)
-6. [How to use](#how-to-use)
-7. [Use in Project](#use-in-project)
-8. [Control Configs](#control-configs)
-9. [Register Custom Validation Filters](#register-custom-validation-filters)
-10. [User guide](#user-guide)
-11. [Available Keywords](#available-keywords)
-12. [Support Data Types](#support-data-types)
-13. [License](#license)
+- [Installation](#installation)
+- [Command line guide](#command-line-guide)
+- [How to use](#how-to-use)
+- [Use in Project](#use-in-project)
+- [Control Configs](#control-configs)
+- [Register Custom Validation Filters](#register-custom-validation-filters)
+- [User guide](#user-guide)
+- [Available Keywords](#available-keywords)
+- [Support Data Types](#support-data-types)
+- [License](#license)
 
 ## Overview
 
