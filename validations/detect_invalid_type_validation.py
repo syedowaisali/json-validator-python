@@ -40,7 +40,7 @@ def matching_data_type(filtered_key, data_type, impl):
     return {converted_type(impl[filtered_key])}.intersection(data_type.split("|"))
 
 
-class DetectInvalidTypeValidation(Validation):
+class DetectInvalidTypeValidation():
 
     def validate(self, key, filtered_key, schema, impl, loc, schema_map):
 

@@ -5,7 +5,7 @@ from config.rules import rules
 from utils.logger import logger
 
 
-class RequiredFieldValidation(Validation):
+class RequiredFieldValidation():
 
     def validate(self, key, filtered_key, schema, impl, loc, schema_map):
 

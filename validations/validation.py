@@ -1,8 +1,30 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+
+from models.object_set import ObjectSet
+from models.result import Error, Warn, Info, Success
 
 
 class Validation(ABC):
 
-    @abstractmethod
-    def validate(self, key, schema, target, path):
-        pass
+    def __init__(self):
+        self.__results = ObjectSet()
+
+    def create_error(self, message):
+        self.__results.add(Error(message, self))
+
+    def create_warn(self, message):
+        self.__results.add(Warn(message, self))
+
+    def create_info(self, message):
+        self.__results.add(Info(message, self))
+
+    def create_success(self, message):
+        self.__results.add(Success(message, self))
+
+    def init_log_set(self):
+        self.__results.ini()
+
+    def get_set(self):
+        return self.__results.item_set()
+
+

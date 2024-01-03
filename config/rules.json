@@ -7,7 +7,7 @@
       "at_least_one_message": "(bold)(blue){source}(end) should have at least one (bold)object(end)."
     },
     "__data_type__": {
-      "invalid": "in schema (bold)(blue){source}(end) has invalid data type (bold)(red){datatype}(end). See the available data-types here https://github.com/syedowaisali/json-validator-python?tab=readme-ov-file#data-types",
+      "invalid": "in schema (bold)(blue){source}(end) has invalid data type (bold)(red){datatype}(end). See the available data-types here https://github.com/syedowaisali/json-validator-python?tab=readme-ov-file#support-data-types",
       "not_match": "(bold)(blue){source}(end) expect {valid_data_type} data type, but found (bold)(red){target_data_type}(end)."
     },
     "__binder__": {

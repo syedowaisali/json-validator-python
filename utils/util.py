@@ -1,3 +1,11 @@
+import json
+import os.path
+
+from config import enable_validation_source, configs
+from models.result import Success, Info, Warn, Error
+from utils.logger import logger
+
+
 class __DataType:
     def __init__(self):
         self.string = "string"
@@ -44,6 +52,7 @@ class ReservedKey:
         self.lower = "__lower__"
         self.bypass = "__bypass__"
         self.binder = "__binder__"
+        self.defaults = "__defaults__"
 
     def all_keys(self) -> dict:
         return {self.required: bool,
@@ -57,10 +66,12 @@ class ReservedKey:
                 self.upper: bool,
                 self.lower: bool,
                 self.bypass: bool,
-                self.binder: dict}
+                self.binder: dict,
+                self.defaults: dict}
 
 
 reserved_key = ReservedKey()
+
 
 def converted_type(field):
     field_type = field if type(field) is type else type(field)
@@ -95,16 +106,15 @@ def converted_type(field):
         return "array"
 
 
-
-
 def remove_reserved_keys(doc):
     return [k for k in doc.keys() if k not in reserved_key.all_keys().keys()]
 
 
 def is_find_data_type(source: str, target: list) -> bool:
-    for dt in source.split("|"):
-        if dt in target:
-            return True
+    if type(source) is str:
+        for dt in source.split("|"):
+            if dt in target:
+                return True
 
     return False
 
@@ -118,8 +128,8 @@ def is_exact_match_data_type(source: str, target: list) -> bool:
 
 
 def matching_data_type(key, dt, target):
-    return dt == data_type_cls.array and dt in converted_type(target[key]) or {converted_type(target[key])}.intersection(dt.split("|"))
-
+    return dt == data_type_cls.array and dt in converted_type(target[key]) or {
+        converted_type(target[key])}.intersection(dt.split("|"))
 
 
 def read_file(file_path):
@@ -129,3 +139,59 @@ def read_file(file_path):
 
 def read_rules(file_path="config/rules.json"):
     return read_file(file_path)
+
+
+def is_valid_file(file_path: str) -> bool:
+    return os.path.isfile(str(file_path))
+
+
+def is_valid_dir(dir_path: str) -> bool:
+    return os.path.isdir(str(dir_path))
+
+
+def is_valid_json(source) -> bool:
+    try:
+        if type(source) is not dict and type(source) is not list:
+            json.loads(source)
+        return True
+    except:
+        return False
+
+
+def get_as_json(source):
+    if type(source) is dict or type(source) is list:
+        return source
+    else:
+        return json.loads(source)
+
+
+def dump_log(output_list: list):
+
+    for output in output_list:
+        print()
+
+        results = []
+        results.extend(output.schema_result)
+        results.extend(output.document_result)
+
+        for result in results:
+            msg = result.message
+            if configs.get(enable_validation_source) is True:
+                msg = f"{msg} (bold)(black){type(result.validation).__name__}(end)"
+
+            result_type = type(result)
+
+            if result_type is Success:
+                logger.success(msg)
+
+            elif result_type is Info:
+                logger.info(msg)
+
+            elif result_type is Warn:
+                logger.warn(msg)
+
+            elif result_type is Error:
+                logger.error(msg)
+
+        print()
+        print("=-" * 50)

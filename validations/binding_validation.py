@@ -6,7 +6,7 @@ from config.rules import rules
 from utils.logger import logger
 
 
-class BindingValidation(Validation):
+class BindingValidation():
 
     def validate(self, key, filtered_key, schema, impl, loc, schema_map):
 

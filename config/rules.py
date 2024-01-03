@@ -40,4 +40,4 @@ class Rules:
     def get_binding(self, field):
         return False if "__bind__" not in field else field.get("__bind__")
 
-rules = Rules()
+#rules = Rules()

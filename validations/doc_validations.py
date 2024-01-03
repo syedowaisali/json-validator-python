@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 
-from utils.logger import logger
-from config.rules import rules
+
+from models.result import Error
 from utils.util import matching_data_type, converted_type
+from validations.validation import Validation
 
 
-class DocValidation(ABC):
+class DocValidation(Validation):
 
     @abstractmethod
     def validate(self, key, schema, doc, path, index, doc_is_dynamic):
@@ -21,7 +22,7 @@ class DetectInvalidKeys(DocValidation):
 
         if schema.get(key) is None:
 
-            logger.error(
+            self.create_error(
                 f"unknown key (bold){key}(end) found in (bold)(blue){path}(end) remove it or add it in schema.")
 
 
@@ -39,6 +40,12 @@ class DataTypeEqualityCheck(DocValidation):
             if binding is None and not bypass and key in doc.keys() and not matching_data_type(key, data_type, doc):
                 target_data_type = converted_type(doc[key])
                 valid_data_type = " or ".join([f"(bold){i}(end)" for i in data_type.split("|")])
-                logger.error(rules.get_not_match_data_type_message(path, valid_data_type, target_data_type))
+                self.create_error(f"(bold)(blue){path}(end) expect {valid_data_type} value, but found (bold)(red){target_data_type}(end) value.")
 
 
+
+# create validation set
+doc_validation_set = {
+    DetectInvalidKeys(),
+    DataTypeEqualityCheck()
+}

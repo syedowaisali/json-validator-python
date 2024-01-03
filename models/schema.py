@@ -7,10 +7,11 @@ class Schema:
         self.child_schema = {}
         self.val = val
         self.key = key
-        self.is_required = key.endswith("*")
-        self.keys = ""
+
+        #self.keys = ""
 
         if type(val) is dict:
+            self.is_required = val.get("__required__")
             self.data_type = val.get("__data_type__") #"string" if "__data_type__" not in val else val.get("__data_type__")
             self.min_value = val.get("__min_value__") #"string" if "__data_type__" not in val else val.get("__data_type__")
             self.max_value = val.get("__max_value__") #"string" if "__data_type__" not in val else val.get("__data_type__")
