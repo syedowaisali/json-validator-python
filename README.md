@@ -141,7 +141,7 @@ Remove formatting from the output.
 
 Import **validator** function from **jsvl.core** module and validate the document with multiple options.
 ```python
-from jsvl.core import validator
+from jsvl.core.validator import validate
 
 # schema json
 schema = "path/to/schema.json" or "path/to/all_schema_dir/" or {}
@@ -150,7 +150,7 @@ schema = "path/to/schema.json" or "path/to/all_schema_dir/" or {}
 document = "path/to/document.json" or "path/to/all_documents_dir/" or {} or []
 
 # perform validation
-result = validator.validate(schema, document)
+result = validate(schema, document)
 ```
 ### Control Configs:
 
