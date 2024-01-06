@@ -1,4 +1,4 @@
-from utils.util import reserved_key
+from jsvl.utils.util import reserved_key
 
 
 class Schema:

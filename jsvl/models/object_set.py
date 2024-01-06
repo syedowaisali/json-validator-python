@@ -1,6 +1,6 @@
 from ordered_set import OrderedSet
 
-from models.result import Result
+from jsvl.models.result import Result
 
 
 class ObjectSet:

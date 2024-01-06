@@ -90,7 +90,7 @@ Extend the functionality of the library by creating custom extensions, tailoring
 
 ### Installation
 ```commandline
-install pip jsvl
+pip install jsvl -U
 ```
 ### Command line guide
 List of available commands
@@ -118,27 +118,23 @@ List of available commands
 
 Validate a single json document.
 ```commandline
-~$ python jsvl -s /path/to/schema.json -i /path/to/document.json
+~$ jsvl -s /path/to/schema.json -d /path/to/document.json
 ```
 Validate multiple documents with a single schema.
 ```commandline
-~$ python jsvl -s /path/to/schema.json -i /path/to/documents/
+~$ jsvl -s /path/to/schema.json -d /path/to/documents/
 ```
 Validate multiple documents with multiple schema.
 ```commandline
-~$ python jsvl -s /path/to/schema/ -i /path/to/documents/
-```
-Validate single or multiple documents with remote schema.
-```commandline
-~$ python jsvl -s http://www.yourdomain.com/schema.json -i /path/to/document.json
+~$ jsvl -s /path/to/schema/ -d /path/to/documents/
 ```
 Disable informative tags from the output.
 ```commandline
-~$ python jsvl -s path/to/schema.json -i /path/to/document.json --disable-tags
+~$ jsvl -s path/to/schema.json -d /path/to/document.json --disable-tags
 ```
 Remove formatting from the output.
 ```commandline
-~$ python jsvl -s path/to/schema.json -i /path/to/document.json --plain-output
+~$ jsvl -s path/to/schema.json -d /path/to/document.json --plain-output
 ```
 
 ### Use in Project:
@@ -159,7 +155,6 @@ result = validator.validate(schema, document)
 ### Control Configs:
 
 ```python
-from jsvl.core import validator
 import jsvl.config as cfg
 from jsvl.utils.util import reserved_key
 
@@ -202,29 +197,29 @@ You can register two types of validation filter.
 1. **Schema Validation**
 
 ```python
-from jsvl.validations import schema_validation_set, SchemaValidation
+from jsvl.validations.schema_validations import schema_validation_set, SchemaValidation
 
-# creating custom filter class for schema validation
+# creating custom validation class for schema validation
 class CustomSchemaValidation(SchemaValidation):
 
     def validate(self, key, schema, path):
-        print(key)
+        pass
 
-# register filter in schema validation set
-schema_validation_set.add(CustomCheckForSchemaValidation())
+# register validation in schema validation set
+schema_validation_set.add(CustomSchemaValidation())
 ```
 2. **Document Validation**
 ```python
-from jsvl.validations import doc_validation_set, DocValidation
+from jsvl.validations.doc_validations import doc_validation_set, DocValidation
 
-# creating custom filter class for document validation
+# creating custom validation class for document validation
 class CustomDocValidation(DocValidation):
 
     def validate(self, key, schema, doc, path, index, doc_is_dynamic):
         pass
 
-# register filter in document validation set
-doc_validation_set.add(CustomCheckForDocValidation())
+# register validation in document validation set
+doc_validation_set.add(CustomDocValidation())
 
 ```
 ### User guide

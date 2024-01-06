@@ -11,7 +11,7 @@ github_url = "https://github.com/syedowaisali/json-validator-python"
 
 setup(
     name="jsvl",
-    version="1.0.2",
+    version="1.0.7",
     url=github_url,
     project_urls={
         'Issues': f'{github_url}/issues',
@@ -24,6 +24,9 @@ setup(
     long_description_content_type="text/markdown",
     keywords="python json schema validation",
     packages=find_packages(),
+    install_requires=[
+        'ordered_set',
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "Environment :: Console",
@@ -37,5 +40,10 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
     ],
     license="GPL",
-    python_requires=">=3.6"
+    python_requires=">=3.6",
+    entry_points={
+        "console_scripts": [
+            "jsvl = jsvl.cli:run_validation",
+        ],
+    },
 )

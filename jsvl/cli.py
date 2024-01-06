@@ -1,6 +1,6 @@
 
-from core import validator
-from core.arg_parser import setup_arg_parser, parse
+from jsvl.core import validator
+from jsvl.core.arg_parser import setup_arg_parser, parse
 
 
 def run_validation():

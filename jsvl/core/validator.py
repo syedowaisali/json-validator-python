@@ -5,14 +5,14 @@ from typing import List
 
 from ordered_set import OrderedSet
 
-from models.result import Output, Info, Error, Success, Warn
+from jsvl.models.result import Output, Info, Error, Success, Warn
 
-import config as cfg
-import models.schema as schema_model
-from utils.message_list import ml
-import utils.util as util
-from validations.doc_validations import doc_validation_set, validate_unknown_keys
-from validations.schema_validations import schema_validation_set
+import jsvl.config as cfg
+import jsvl.models.schema as schema_model
+from jsvl.utils.message_list import ml
+import jsvl.utils.util as util
+from jsvl.validations.doc_validations import doc_validation_set, validate_unknown_keys
+from jsvl.validations.schema_validations import schema_validation_set
 
 
 def normalize_path(path: str, index: int = 0, doc_is_dynamic: bool = False) -> str:

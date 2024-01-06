@@ -1,7 +1,7 @@
-from core.validator import validate
-from utils.util import reserved_key, data_type_cls, is_valid_regex
-from utils.message_list import ml
-from validations.schema_validations import ValidateKeysCombinations, ValidateValueType, ValidateSchemaBindings, \
+from jsvl.core.validator import validate
+from jsvl.utils.util import reserved_key, data_type_cls, is_valid_regex
+from jsvl.utils.message_list import ml
+from jsvl.validations.schema_validations import ValidateKeysCombinations, ValidateValueType, ValidateSchemaBindings, \
     ValidateDataType, ValidateMinMaxValue, ValidateTextCase
 
 

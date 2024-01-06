@@ -2,10 +2,10 @@ import json
 import re
 from abc import abstractmethod
 
-from utils.message_list import ml
-from utils.util import converted_type, combine, reserved_key, regex_keys
-from validations.validation import Validation
-import models.schema as schema_model
+from jsvl.utils.message_list import ml
+from jsvl.utils.util import converted_type, combine, reserved_key, regex_keys
+from jsvl.validations.validation import Validation
+import jsvl.models.schema as schema_model
 
 
 class DocValidation(Validation):

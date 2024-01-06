@@ -1,7 +1,7 @@
 from abc import ABC
 
-from models.object_set import ObjectSet
-from models.result import Error, Warn, Info, Success
+from jsvl.models.object_set import ObjectSet
+from jsvl.models.result import Error, Warn, Info, Success
 
 
 class Validation(ABC):

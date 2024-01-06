@@ -1,9 +1,9 @@
 import json
 
-from core.validator import validate
-from utils.util import reserved_key, data_type_cls
-from utils.message_list import ml
-from validations.doc_validations import ValidateRequiredFields, ValidateUnknownKeys, ValidateDataEquality, \
+from jsvl.core.validator import validate
+from jsvl.utils.message_list import ml
+from jsvl.utils.util import data_type_cls, reserved_key
+from jsvl.validations.doc_validations import ValidateUnknownKeys, ValidateRequiredFields, ValidateDataEquality, \
     ValidateDocBinding, ValidateDocRegexBinding, ValidateDocTextCase, ValidateTextSpace
 
 

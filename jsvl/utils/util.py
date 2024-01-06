@@ -2,9 +2,9 @@ import json
 import os.path
 import re
 
-from config import enable_validation_source, configs
-from models.result import Success, Info, Warn, Error
-from utils.logger import logger
+from jsvl.config import enable_validation_source, configs
+from jsvl.models.result import Success, Info, Warn, Error
+from jsvl.utils.logger import logger
 
 
 class __DataType:

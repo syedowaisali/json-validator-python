@@ -1,4 +1,4 @@
-from config import configs, enable_output_tags, formatted_output
+from jsvl.config import configs, enable_output_tags, formatted_output
 
 
 

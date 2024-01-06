@@ -1,10 +1,10 @@
 from abc import abstractmethod
 
-from utils.util import reserved_key, data_type_cls, converted_type, is_find_data_type, is_exact_match_data_type, \
+from jsvl.utils.util import reserved_key, data_type_cls, converted_type, is_find_data_type, is_exact_match_data_type, \
     is_valid_text_case, is_valid_regex, regex_keys
-import models.schema as schema_model
-from utils.message_list import ml
-from validations.validation import Validation
+import jsvl.models.schema as schema_model
+from jsvl.utils.message_list import ml
+from jsvl.validations.validation import Validation
 
 
 class SchemaValidation(Validation):
