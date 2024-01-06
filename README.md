@@ -1,6 +1,6 @@
 # JSON Validator
 
-[![GitHub license](https://img.shields.io/github/license/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/blob/main/LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![GitHub issues](https://img.shields.io/github/issues/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/issues)
 [![GitHub stars](https://img.shields.io/github/stars/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/network)
@@ -90,15 +90,23 @@ install pip jsvl
 ### Command line guide
 List of available commands
 
-| Command                  | Definition                                                                                                                                                                                                                            |
-|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -h or --help             | for help.                                                                                                                                                                                                                             |
-| -s or --schema           | provide a schema file path or URL that will be used to analyze the input json<br />Note. if the provided input is a directory then you can also provide the schema path as a directory. All schema files should have _schema postfix. | 
-| -i or --input            | provide a directory or a single json file path that you want to analyze.<br/>Note: if the input source is a directory then provided schema should be in a directory and should have the same name with _schema postfix.               |
-| --disable-tags           | pass this flag to disable the informative tags from the output log.                                                                                                                                                                   |
-| --plain-output           | pass this flag to disable the formatted output.                                                                                                                                                                                       |
-| --schema-file-postfix    | provide a schema file postfix if schema source is directory default is "_schema".                                                                                                                                                     |
-| --show-validation-source | pass this flag will show the actual source of validation to end of the each log.                                                                                                                                                      |
+| Command                              | Definition                                                                                                                                                                                                        |
+|--------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -s or --schema                       | Provide a schema json, file or a directory path for validating the documents.                                                                                                                                     | 
+| -d or --doc                          | Provide a document json, file or a directory path for validation.<br/>Note: if the schema source is a directory then provided schema should be in a directory and should have the same name with _schema postfix. |
+| -csfp or --change-schema-file-postfix | This argument will be used to change the schema file postfix name.                                                                                                                                                |
+| --disable-tags                       | Pass this flag to disable the output tags from logs.                                                                                                                                                              |
+| --plain-output                       | Pass this flag to remove the formatting from logs.                                                                                                                                                                |
+| --disable-logs                       | Pass this flag to disable all the logs.                                                                                                                                                                           |
+| --show-validation-source             | Pass this flag to show the validation class name with logs.                                                                                                                                                       |
+| --tight-space                        | Pass this flag to disable the allow_space globally.                                                                                                                                                               |
+| -ml or --min-length                  | Set the minimum length globally, default is 0.                                                                                                                                                                    |
+| -xl or --max-length                  | Set the maximum length globally, default is None.                                                                                                                                                                 |
+| -mv or --min-value                   | Set the minimum value globally, default is 0.                                                                                                                                                                     |
+| -xv or --max-value                   | Set the maximum value globally, default is None.                                                                                                                                                                  |
+| -c or --case                         | Set the text constraints globally, default is None. set [Available Keywords](#available-keywords)                                                                                                                 |
+| -v or --version                      | Check version.                                                                                                                                                                                                    |
+| -h or --help                         | For help.                                                                                                                                                                                                         |
 
 ### How to use
 **Command line**
@@ -135,24 +143,53 @@ Import **validator** function from **jsvl.core** module and validate the documen
 from jsvl.core import validator
 
 # schema json
-schema = "path/to/schema.json" or "path/to/all_schema_dir/" or "http://www.yourdomain.com/schema.json" or {}
+schema = "path/to/schema.json" or "path/to/all_schema_dir/" or {}
 
-# schema json
+# document json
 document = "path/to/document.json" or "path/to/all_documents_dir/" or {} or []
 
 # perform validation
-validator.validate(schema, document)
+result = validator.validate(schema, document)
 ```
 ### Control Configs:
 
 ```python
-from jsvl.config import configs, enable_output_tags, formatted_output
+from jsvl.core import validator
+import jsvl.config as cfg
+from jsvl.utils.util import reserved_key
 
-# disable output tags. default is True
-configs[enable_output_tags] = False
+# change schema file postfix default is _schema
+cfg.configs[cfg.schema_file_postfix] = "_schema"
 
-# disable formatted output. default is True
-configs[formatted_output] = False
+# disable the output tags from logs
+cfg.configs[cfg.enable_output_tags] = False
+
+# remove the formatting from logs
+cfg.configs[cfg.formatted_output] = False
+
+# disable all the logs
+cfg.configs[cfg.enable_output_logs] = True
+
+# show the validation class name with logs
+cfg.configs[cfg.enable_validation_source] = True
+
+# disable the allow_space globally
+cfg.configs[cfg.allow_space] = True
+
+# set the minimum length globally, default is 0.
+cfg.configs[cfg.min_length] = 0
+
+# set the maximum length globally, default is None.
+cfg.configs[cfg.max_length] = 1000
+
+# set the minimum value globally, default is 0.
+cfg.configs[cfg.min_value] = 0
+
+# set the maximum value globally, default is None.
+cfg.configs[cfg.max_value] = 1000
+
+# set the text constraints globally, default is None.
+cfg.configs[cfg.case] = reserved_key.upper
 ```
 ### Register Custom Validation Filters:
 
@@ -195,13 +232,21 @@ Validating a sample document.
         "__data_type__": "object",
         "items*": {
             "__data_type__": "object_array",
-            "title*": {},
-            "description": {},
+            "title*": {
+              "__case__": "__title__"
+            },
+            "description": {
+              "__min_length__": 20
+            },
+            "email": {
+              "__bind_regex__": "__email__"
+            },
             "category*": {
               "__bind__": "category"
             },
-            "provider*": {
-              "__bind__": "company"
+            "keywords": {
+              "__bind_regex__": "^[a-zA-Z]+$",
+              "__rem__": "support only alphabets"
             },
             "quantity*": {
                 "__data_type__": "integer",
@@ -213,9 +258,13 @@ Validating a sample document.
             }
         }
     },
+    "~others": {},
     "__binder__": {
-        "category": ["Health", "Fashion", "Lifestyle"],
-        "company": "Uniliver"
+        "category": ["Health", "Fashion", "Lifestyle"]
+    },
+    "__defaults__": {
+      "__min_value__": 100,
+      "__max_value__": 1000
     }
 }
 ```
@@ -229,19 +278,26 @@ Validating a sample document.
         {
           "title": "Product 1",
           "description": "",
+          "email": "john@gmail.com",
           "quantity": 1,
           "category": "Fashion",
-          "provider": "Uniliver",
+          "keywords": "Health",
           "discount": 30.0
         },
         {
           "title": "Product 2",
           "quantity": 4,
           "category": "Health",
-          "provider": "Uniliver",
+          "keywords": "Health",
           "discount": 0.0
         }
       ]
+    },
+    "others": {
+      "coords": {
+        "lat": 0.022,
+        "lng": 2.34
+      }
     }
 }
 ```

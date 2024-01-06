@@ -2,6 +2,7 @@
 *.egg-info
 build
 dist
+.pypirc
 
 # Cache
 __pycache__
@@ -17,6 +18,7 @@ htmlcov
 # IDE
 .venv
 .idea
+
 
 # others
 crash_report.log

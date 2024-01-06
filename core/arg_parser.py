@@ -16,7 +16,7 @@ def setup_arg_parser() -> argparse.ArgumentParser:
         dest="schema",
         required=True,
         type=str,
-        help="Provide a schema json, file or a directory path for validating the documents"
+        help="Provide a schema json, file or a directory path for validating the documents."
     )
     parser.add_argument(
         "-d", "--doc",
@@ -48,13 +48,13 @@ def setup_arg_parser() -> argparse.ArgumentParser:
         "--disable-logs",
         dest="enable_output_logs",
         action="store_false",
-        help="Pass this flag to hide all the logs."
+        help="Pass this flag to disable all the logs."
     )
     parser.add_argument(
         "--show-validation-source",
         dest="enable_validation_source",
         action="store_true",
-        help="Pass this flag to show the validation class name with logs"
+        help="Pass this flag to show the validation class name with logs."
     )
     parser.add_argument(
         "--tight-space",
@@ -101,7 +101,7 @@ def setup_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-v", "--version",
         action="version",
-        version="%(prog)s 1.0"
+        version="%(prog)s 1.0.2"
     )
 
     return parser

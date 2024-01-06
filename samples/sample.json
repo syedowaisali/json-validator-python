@@ -4,18 +4,25 @@
         {
           "title": "Product 1",
           "description": "",
+          "email": "john@gmail.com",
           "quantity": 1,
           "category": "Fashion",
-          "provider": "Uniliver",
+          "keywords": "Health",
           "discount": 30.0
         },
         {
           "title": "Product 2",
           "quantity": 4,
           "category": "Health",
-          "provider": "Uniliver",
+          "keywords": "Health",
           "discount": 0.0
         }
       ]
+    },
+    "others": {
+      "coords": {
+        "lat": 0.022,
+        "lng": 2.34
+      }
     }
 }

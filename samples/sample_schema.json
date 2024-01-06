@@ -3,13 +3,21 @@
         "__data_type__": "object",
         "items*": {
             "__data_type__": "object_array",
-            "title*": {},
-            "description": {},
+            "title*": {
+              "__case__": "__title__"
+            },
+            "description": {
+              "__min_length__": 20
+            },
+            "email": {
+              "__bind_regex__": "__email__"
+            },
             "category*": {
               "__bind__": "category"
             },
-            "provider*": {
-              "__bind__": "company"
+            "keywords": {
+              "__bind_regex__": "^[a-zA-Z]+$",
+              "__rem__": "support only alphabets"
             },
             "quantity*": {
                 "__data_type__": "integer",
@@ -21,8 +29,12 @@
             }
         }
     },
+    "~others": {},
     "__binder__": {
-        "category": ["Health", "Fashion", "Lifestyle"],
-        "company": "Uniliver"
+        "category": ["Health", "Fashion", "Lifestyle"]
+    },
+    "__defaults__": {
+      "__min_value__": 100,
+      "__max_value__": 1000
     }
 }

@@ -35,6 +35,9 @@ class ValidateUnknownKeys(DocValidation):
     def validate(self, key, schema, doc, path, index, doc_is_dynamic):
         obj = schema.get(key)
 
+        if obj is not None and obj.can_bypass:
+            return False
+
         if obj is None:
             self.create_error(ml.unknown_key(path))
 
