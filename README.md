@@ -5,7 +5,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/syedowaisali/json-validator-python)](https://github.com/syedowaisali/json-validator-python/network)
 
-**JSON Validator** is a feature-rich Python library designed to elevate the validation of JSON documents by offering an extensive schema-based validation system. It empowers developers to define custom schemas, providing fine-grained control over the structure, data types, and constraints of their JSON data.
+**JSON Validator** is a Python library designed to enhance the validation of JSON documents. It provides a simple yet powerful set of features for schema-based validation, offering flexibility and precision in handling JSON data.
 
 ## Outline
 
@@ -17,11 +17,12 @@
    - [Required and Optional Fields](#4-required-and-optional-fields)
    - [Child Value Bypass](#5-child-value-bypass)
    - [Value Bindings](#6-value-bindings)
-   - [String Value Constraints](#7-string-value-constraints)
-   - [Numeric Value Constraints](#8-numeric-value-constraints)
-   - [Case Constraints](#9-case-constraints)
-   - [Spacing in String Values](#10-spacing-in-string-values)
-   - [Custom Extension Library](#11-custom-extension-library)
+   - [Regular Expression Bindings](#7-regular-expression-bindings)
+   - [String Value Constraints](#8-string-value-constraints)
+   - [Numeric Value Constraints](#9-numeric-value-constraints)
+   - [Case Constraints](#10-case-constraints)
+   - [Spacing in String Values](#11-spacing-in-string-values)
+   - [Custom Extension Library](#12-custom-extension-library)
 - [Installation](#installation)
 - [Command line guide](#command-line-guide)
 - [How to use](#how-to-use)
@@ -63,23 +64,27 @@ Allow bypassing the validation of child values, providing flexibility when certa
 
 Support value bindings to establish relationships between different parts of the JSON document, enhancing the expressiveness of your schemas.
 
-### 7. String Value Constraints
+### 7. Regular Expression Bindings
+
+Support regular expression bindings for precise validation of values..
+
+### 8. String Value Constraints
 
 Control the minimum and maximum length of string values, applying constraints to ensure data meets specific length requirements.
 
-### 8. Numeric Value Constraints
+### 9. Numeric Value Constraints
 
 Define minimum and maximum values for integer and float types, allowing precise control over the numeric range of your data.
 
-### 9. Case Constraints
+### 10. Case Constraints
 
 Apply case constraints to string types, specifying whether they should be in lower, upper, or mixed case.
 
-### 10. Spacing in String Values
+### 11. Spacing in String Values
 
 Optionally allow spacing in string data types, enhancing readability in scenarios where formatted text is essential.
 
-### 11. Custom Extension Library
+### 12. Custom Extension Library
 
 Extend the functionality of the library by creating custom extensions, tailoring the validation process to your unique needs.
 
@@ -335,4 +340,4 @@ Validating a sample document.
 
 # License
 
-[Apache License 2.0](https://github.com/syedowaisali/json-validator-python/blob/main/LICENSE)
+[GPL v3](https://github.com/syedowaisali/json-validator-python/blob/main/LICENSE)
