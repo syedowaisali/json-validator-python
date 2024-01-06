@@ -1,6 +1,7 @@
 from abc import abstractmethod
 
-from utils.util import reserved_key, data_type_cls, converted_type, is_find_data_type, is_exact_match_data_type
+from utils.util import reserved_key, data_type_cls, converted_type, is_find_data_type, is_exact_match_data_type, \
+    is_valid_text_case, is_valid_regex, regex_keys
 import models.schema as schema_model
 from utils.message_list import ml
 from validations.validation import Validation
@@ -12,8 +13,10 @@ class SchemaValidation(Validation):
     def validate(self, key, schema, path):
         pass
 
+    def is_default_object(self, key, schema, path):
+        return path == reserved_key.defaults and key == reserved_key.defaults and type(schema.get(key).val) is dict
 
-class CheckInvalidDataType(SchemaValidation):
+class ValidateDataType(SchemaValidation):
 
     def validate(self, key, schema, path):
 
@@ -40,28 +43,35 @@ class CheckInvalidDataType(SchemaValidation):
             self.create_error(msg)
 
 
-class CheckBindings(SchemaValidation):
+class ValidateSchemaBindings(SchemaValidation):
 
     def validate(self, key, schema, path):
 
         value = schema.get(key)
+        binding = value.binding
+        regex_binding = value.regex_binding
 
-        if type(value.val) is dict:
+        if type(binding) is str:
+            binder = schema_model.schema_doc.get("__binder__")
 
-            binding = value.binding
+            if binder is None:
+                self.create_error(ml.missing_binder_object())
+                return
 
-            if binding and type(binding) is str:
-                binder = schema_model.schema_doc.get("__binder__")
+            if binder.get(binding) is None:
+                self.create_error(ml.missing_binding(binding))
 
-                if binder is None:
-                    self.create_error(ml.missing_binder_object())
-                    return
+        if type(regex_binding) is str:
+            regex_binding = self.resolve_pattern(regex_binding)
+            regex_result = is_valid_regex(regex_binding)
+            if regex_result is not None:
+                self.create_error(ml.invalid_regex_binding(f"{path}.{reserved_key.bind_regex}", regex_result))
 
-                if binder.get(binding) is None:
-                    self.create_error(ml.missing_binding(binding))
+    def resolve_pattern(self, regex):
+        return regex_keys.get(regex) if regex in regex_keys.keys() else regex
 
 
-class CheckInvalidValueType(SchemaValidation):
+class ValidateValueType(SchemaValidation):
 
     def validate(self, key, schema, path):
         schema_obj = schema.get(key)
@@ -76,7 +86,7 @@ class CheckInvalidValueType(SchemaValidation):
 
                     value = schema_obj.val.get(child_key)
 
-                    if child_key in [reserved_key.max_length, reserved_key.max_value] and value is None:
+                    if child_key in [reserved_key.max_length, reserved_key.max_value, reserved_key.case] and value is None:
                         continue
 
                     if child_key in [reserved_key.min_value, reserved_key.max_value] and type(value) is int:
@@ -111,7 +121,7 @@ class CheckInvalidValueType(SchemaValidation):
 
         if key == reserved_key.defaults and type(schema_obj.val) is dict:
             for child_key in schema_obj.val.keys():
-                if child_key in [reserved_key.allow_space, reserved_key.min_length, reserved_key.max_length, reserved_key.min_value, reserved_key.max_value, reserved_key.upper, reserved_key.lower]:
+                if child_key in [reserved_key.allow_space, reserved_key.min_length, reserved_key.max_length, reserved_key.min_value, reserved_key.max_value, reserved_key.case]:
                     value = schema_obj.val.get(child_key)
 
                     if child_key in [reserved_key.max_length, reserved_key.max_value] and value is None:
@@ -125,7 +135,7 @@ class CheckInvalidValueType(SchemaValidation):
                             reserved_key.all_keys().get(child_key)), converted_type(value)))
 
 
-class IrrelevantKeysCombinations(SchemaValidation):
+class ValidateKeysCombinations(SchemaValidation):
 
     def validate(self, key, schema, path):
         schema_obj = schema.get(key)
@@ -141,7 +151,7 @@ class IrrelevantKeysCombinations(SchemaValidation):
                                                  data_type_cls.bool_array, data_type_cls.object_array]):
 
                 string_type_support_keys = [reserved_key.min_length, reserved_key.max_length, reserved_key.allow_space,
-                                            reserved_key.upper, reserved_key.lower]
+                                            reserved_key.case]
 
                 for string_support_key in string_type_support_keys:
                     if string_support_key in val.keys():
@@ -169,18 +179,14 @@ class IrrelevantKeysCombinations(SchemaValidation):
                     if i_key not in reserved_key.all_keys().keys():
                         self.create_warn(ml.key_support_with_object_and_array(f"{i_key}"))
 
-            single_data_types = [data_type_cls.string, data_type_cls.integer, data_type_cls.float, data_type_cls.bool]
-            if is_find_data_type(val, single_data_types):
-                self.create_error(ml.root_key_support())
-
         # check if keys is default then check irrelevant keys
         if type(val) is dict and key == reserved_key.defaults:
             for child_key in val.keys():
-                if child_key not in [reserved_key.allow_space, reserved_key.min_length, reserved_key.max_length, reserved_key.min_value, reserved_key.max_value, reserved_key.upper, reserved_key.lower]:
+                if child_key not in [reserved_key.allow_space, reserved_key.min_length, reserved_key.max_length, reserved_key.min_value, reserved_key.max_value, reserved_key.case]:
                     self.create_error(ml.key_support_for_defaults(f"{path}.{child_key}"))
 
 
-class CheckMinMaxValue(SchemaValidation):
+class ValidateMinMaxValue(SchemaValidation):
 
     def validate(self, key, schema, path):
 
@@ -233,11 +239,25 @@ class CheckMinMaxValue(SchemaValidation):
                                                                              f"{path}.{reserved_key.max_value}"))
 
 
+class ValidateTextCase(SchemaValidation):
+
+    def validate(self, key, schema, path):
+
+        obj = schema.get(key)
+
+        if self.is_default_object(key, schema, path):
+            if not is_valid_text_case(obj.case):
+                self.create_error(ml.invalid_text_case(f"{path}.{reserved_key.case}", obj.case))
+        elif not is_valid_text_case(obj.case):
+            self.create_error(ml.invalid_text_case(f"{path}.{reserved_key.case}", obj.case))
+
+
 # schema validation set
 schema_validation_set = {
-    CheckInvalidDataType(),
-    CheckBindings(),
-    CheckInvalidValueType(),
-    IrrelevantKeysCombinations(),
-    CheckMinMaxValue()
+    ValidateDataType(),
+    ValidateSchemaBindings(),
+    ValidateValueType(),
+    ValidateKeysCombinations(),
+    ValidateMinMaxValue(),
+    ValidateTextCase()
 }

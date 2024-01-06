@@ -1,17 +1,13 @@
 from core.validator import validate
-from models.result import Error, Warn
-from utils.util import reserved_key, data_type_cls
+from utils.util import reserved_key, data_type_cls, is_valid_regex
 from utils.message_list import ml
-from validations.schema_validations import IrrelevantKeysCombinations, CheckInvalidValueType, CheckBindings, \
-    CheckInvalidDataType
+from validations.schema_validations import ValidateKeysCombinations, ValidateValueType, ValidateSchemaBindings, \
+    ValidateDataType, ValidateMinMaxValue, ValidateTextCase
 
 
-class TestSchemaValidationErrors:
+class TestSchemaValidation:
 
-    def setup_method(self):
-        pass
-
-    def test_check_invalid_data_type(self):
+    def test_validate_data_type(self):
         schema = {
             "__data_type__": "number",
             "cart": {
@@ -27,8 +23,8 @@ class TestSchemaValidationErrors:
             }
         }
 
-        actual_errors = self.__apply_and_get_errors(schema, validation=CheckInvalidDataType)
-        expected_errors = [
+        actual_logs = self.__validate(schema, validation=ValidateDataType)
+        expected_logs = [
             ml.empty_value_in_data_type(f"cart.primary.{reserved_key.data_type}"),
             ml.found_invalid_data_type(f"cart.location.{reserved_key.data_type}", "s"),
             ml.found_invalid_data_type(f"cart.secondary.{reserved_key.data_type}", "j"),
@@ -36,21 +32,21 @@ class TestSchemaValidationErrors:
             ml.found_invalid_data_type(reserved_key.data_type, "number"),
         ]
 
-        self.__assert_result(actual_errors, expected_errors, 5)
+        self.__assert_result(actual_logs, expected_logs, 5)
 
-    def test_missing_binder_object(self):
+    def test_validate_binder_object(self):
         schema = {
             "type": {
                 reserved_key.bind: "roles"
             }
         }
 
-        actual_errors = self.__apply_and_get_errors(schema, validation=CheckBindings)
-        expected_errors = [ml.missing_binder_object()]
+        actual_logs = self.__validate(schema, validation=ValidateSchemaBindings)
+        expected_logs = [ml.missing_binder_object()]
 
-        self.__assert_result(actual_errors, expected_errors, 1)
+        self.__assert_result(actual_logs, expected_logs, 1)
 
-    def test_missing_binding(self):
+    def test_validate_binding(self):
         schema = {
             "type": {
                 reserved_key.bind: "roles"
@@ -58,18 +54,22 @@ class TestSchemaValidationErrors:
             "event": {
                 reserved_key.bind: "location"
             },
+            "email": {
+                reserved_key.bind_regex: "[0-9]\\"
+            },
             "__binder__": 4
         }
 
-        actual_errors = self.__apply_and_get_errors(schema, validation=CheckBindings)
-        expected_errors = [
+        actual_logs = self.__validate(schema, validation=ValidateSchemaBindings)
+        expected_logs = [
             ml.missing_binding("roles"),
             ml.missing_binding("location"),
+            ml.invalid_regex_binding(f"email.{reserved_key.bind_regex}", is_valid_regex(schema.get('email').get(reserved_key.bind_regex))),
         ]
 
-        self.__assert_result(actual_errors, expected_errors, 2)
+        self.__assert_result(actual_logs, expected_logs, 3)
 
-    def test_invalid_value_type(self):
+    def test_validate_value_type(self):
         schema = {
             "__required__": {},
             "__data_type__": 0,
@@ -85,8 +85,8 @@ class TestSchemaValidationErrors:
             }
         }
 
-        actual_errors = self.__apply_and_get_errors(schema, validation=CheckInvalidValueType)
-        expected_errors = [
+        actual_logs = self.__validate(schema, validation=ValidateValueType)
+        expected_logs = [
             ml.invalid_value_type(reserved_key.required, data_type_cls.bool, data_type_cls.object),
             ml.invalid_value_type(reserved_key.data_type, data_type_cls.string, data_type_cls.integer),
             ml.invalid_value_type(reserved_key.min_length, data_type_cls.integer, data_type_cls.bool),
@@ -99,9 +99,9 @@ class TestSchemaValidationErrors:
             ml.invalid_value_type(f"company.{reserved_key.required}", data_type_cls.bool, data_type_cls.array),
         ]
 
-        self.__assert_result(actual_errors, expected_errors, 10)
+        self.__assert_result(actual_logs, expected_logs, 10)
 
-    def test_irrelevant_keys_combinations(self):
+    def test_validate_keys_combinations(self):
         schema = {
             "__data_type__": "integer",
             "name": {
@@ -113,8 +113,7 @@ class TestSchemaValidationErrors:
                 "__allow_space__": True,
                 "__min_length__": 3,
                 "__max_length__": 5,
-                "__upper__": True,
-                "__lower__": True,
+                "__case__": "__lower__"
             },
             "__defaults__": {
                 "__allow_space__": False,
@@ -122,29 +121,27 @@ class TestSchemaValidationErrors:
                 "__max_length__": 10,
                 "__min_value__": 1,
                 "__max_value__": 5,
-                "__upper__": True,
-                "__lower__": True,
+                "__case__": "__upper__",
                 "hello": {}
             }
         }
 
-        actual_errors = self.__apply_and_get_errors(schema, validation=IrrelevantKeysCombinations)
-        expected_errors = [
-            ml.root_key_support(),
+        actual_logs = self.__validate(schema, validation=ValidateKeysCombinations)
+        expected_logs = [
+            ml.key_support_with_object_and_array("name"),
+            ml.key_support_with_object_and_array("age"),
             ml.key_support_with_number(f"name.{reserved_key.min_value}"),
             ml.key_support_with_number(f"name.{reserved_key.max_value}"),
             ml.key_support_with_string(f"age.{reserved_key.allow_space}"),
             ml.key_support_with_string(f"age.{reserved_key.min_length}"),
             ml.key_support_with_string(f"age.{reserved_key.max_length}"),
-            ml.key_support_with_string(f"age.{reserved_key.upper}"),
-            ml.key_support_with_string(f"age.{reserved_key.upper}"),
-            ml.key_support_with_string(f"age.{reserved_key.lower}"),
+            ml.key_support_with_string(f"age.{reserved_key.case}"),
             ml.key_support_for_defaults(f"{reserved_key.defaults}.hello"),
         ]
 
-        self.__assert_result(actual_errors, expected_errors, 9)
+        self.__assert_result(actual_logs, expected_logs, 9)
 
-    def test_min_max_value(self):
+    def test_validate_min_max_value(self):
         schema = {
             "__min_length__": 3,
             "__max_length__": 2,
@@ -165,8 +162,8 @@ class TestSchemaValidationErrors:
             }
         }
 
-        actual_errors = self.__apply_and_get_errors(schema)
-        expected_errors = [
+        actual_logs = self.__validate(schema, validation=ValidateMinMaxValue)
+        expected_logs = [
             ml.invalid_min_max_value_or_length(reserved_key.min_length, reserved_key.max_length),
             ml.negative_min_length(f"id.{reserved_key.min_length}"),
             ml.invalid_min_max_value_or_length(f"age.{reserved_key.min_value}", f"age.{reserved_key.max_value}"),
@@ -176,17 +173,53 @@ class TestSchemaValidationErrors:
             ml.invalid_min_max_value_or_length(f"{reserved_key.defaults}.{reserved_key.min_value}", f"{reserved_key.defaults}.{reserved_key.max_value}"),
         ]
 
-        self.__assert_result(actual_errors, expected_errors, 7)
+        self.__assert_result(actual_logs, expected_logs, 7)
 
-    def __assert_result(self, actual_errors: list, expected_errors: list, expected_size: int = -1):
+    def test_validate_text_case(self):
+        schema = {
+            "first_name": {
+                "__case__": "upper"
+            },
+            "last_name": {
+                "__case__": "lower"
+            },
+            "full_name": {
+                "__case__": "title"
+            },
+            "location": {
+                "__data_type__": "object",
+                "address": {
+                    "__data_type__": "object",
+                    "country": {
+                        "__case__": "bad"
+                    }
+                }
+            },
+            "__defaults__": {
+                "__case__": "unknown"
+            }
+        }
+
+        actual_logs = self.__validate(schema, validation=ValidateTextCase)
+        expected_logs = [
+            ml.invalid_text_case(f"first_name.{reserved_key.case}", "upper"),
+            ml.invalid_text_case(f"last_name.{reserved_key.case}", "lower"),
+            ml.invalid_text_case(f"full_name.{reserved_key.case}", "title"),
+            ml.invalid_text_case(f"location.address.country.{reserved_key.case}", "bad"),
+            ml.invalid_text_case(f"{reserved_key.defaults}.{reserved_key.case}", "unknown"),
+        ]
+
+        self.__assert_result(actual_logs, expected_logs, 5)
+
+    def __assert_result(self, actual_logs: list, expected_logs: list, expected_size: int = -1):
 
         if expected_size > -1:
-            assert len(actual_errors) == expected_size
+            assert len(actual_logs) == expected_size
 
-        for error in expected_errors:
-            assert error in actual_errors
+        for log in expected_logs:
+            assert log in actual_logs
 
-    def __apply_and_get_errors(self, schema, document=None, validation: object = None):
+    def __validate(self, schema, document=None, validation: object = None):
 
         if document is None:
             document = {}
@@ -196,5 +229,5 @@ class TestSchemaValidationErrors:
         if validation is not None:
             output = [result for result in output if type(result.validation) is validation]
 
-        error_list = [result.message for result in output if type(result) is Error]
-        return error_list
+        logs = [result.message for result in output]
+        return logs

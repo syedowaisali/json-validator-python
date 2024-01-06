@@ -1,19 +1,13 @@
-import json
 
-from utils.util import read_file
 from core import validator
+from core.arg_parser import setup_arg_parser, parse
 
 
 def run_validation():
-    #schema = "invalid json content"
-    schema = "./samples/sample_schema.json"
-    #schema = json.loads(read_file("./samples/sample_schema.json"))
-    #document = json.loads(read_file("./samples/sample.json"))
-    document = "./samples/sample.json"
-    validator.validate(schema, document)
 
-
-
+    parser = setup_arg_parser()
+    args = parse(parser)
+    validator.validate(args.schema, args.doc)
 
 
 # Press the green button in the gutter to run the script.

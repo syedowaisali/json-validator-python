@@ -15,29 +15,29 @@ class AppLogger:
         self.all_success_list = []
 
     def warn(self, message, line_separator=False):
-        output = self.get_output("(yellow)WARN    ::  ", message)
+        output = self.get_output("(yellow)", "WARN    ::  ", message)
         formatted_message = self.apply_formatting(output)
         self.__log(formatted_message, self.warn_set, message, line_separator)
 
     def error(self, message, line_separator=False):
-        output = self.get_output("(red)ERROR   ::  ", message)
+        output = self.get_output("(red)", "ERROR   ::  ", message)
         formatted_message = self.apply_formatting(output)
         self.__log(formatted_message, self.error_set, message, line_separator)
 
     def success(self, message, line_separator=False):
-        output = self.get_output("(green)SUCCESS ::  ", message)
+        output = self.get_output("(green)", "SUCCESS ::  ", message)
         formatted_message = self.apply_formatting(output)
         self.__log(formatted_message, self.success_set, message, line_separator)
 
     def info(self, message, line_separator=False):
-        output = self.get_output("(blue)INFO    ::  ", message)
+        output = self.get_output("(blue)", "INFO    ::  ", message)
         formatted_message = self.apply_formatting(output)
         self.__log(formatted_message, self.info_set, message, line_separator)
 
-    def get_output(self, tag: str, message: str) -> str:
+    def get_output(self, color, tag: str, message: str) -> str:
         output = tag if configs.get(enable_output_tags) else ""
         end = "(end)" if configs.get(enable_output_tags) else ""
-        return f"{output}{message}{end}"
+        return f"{color}{output}{message}{end}"
 
     def apply_formatting(self, output: str) -> str:
         return self.__format_output(output) if configs.get(formatted_output) else self.__remove_formatting(output)

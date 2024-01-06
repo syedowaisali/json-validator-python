@@ -17,3 +17,4 @@ def test_converted_type():
     assert converted_type(["", 1, 0.2]) == "array"
     assert converted_type(["", 1, 0.2, {}, False]) == "array"
     assert converted_type(["", "", 0.2, {}, False]) == "array"
+    assert converted_type([[]]) == "array"

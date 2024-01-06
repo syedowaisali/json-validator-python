@@ -1,6 +1,5 @@
 import json
 import os.path
-import re
 from glob import iglob
 from typing import List
 
@@ -8,12 +7,11 @@ from ordered_set import OrderedSet
 
 from models.result import Output, Info, Error, Success, Warn
 
-from utils.logger import logger
 import config as cfg
 import models.schema as schema_model
 from utils.message_list import ml
 import utils.util as util
-from validations.doc_validations import doc_validation_set
+from validations.doc_validations import doc_validation_set, validate_unknown_keys
 from validations.schema_validations import schema_validation_set
 
 
@@ -23,93 +21,69 @@ def normalize_path(path: str, index: int = 0, doc_is_dynamic: bool = False) -> s
     return f"root[{index}]{path}" if doc_is_dynamic and "root" not in path else path
 
 
-def filter_key(key):
-    return key[:-1] if key.endswith("*") else key
-
-
-def filter_schema_keys(schema):
-    if type(schema) is not dict:
-        return schema
-
-    return {filter_key(k): v for k, v in schema.items()}
-
-
-def analyze_schema(schema, loc):
-    schema = filter_schema_keys(util.remove_reserved_keys(schema))
-
-    if type(schema) is not dict:
-        logger.error("schema should be valid json object")
-        return
-
-    for key in schema.keys():
-        path = normalize_path(f"{loc}.{key}")
-
-        # checking if the value is an object
-        if type(schema.get(key)) is dict:
-
-            for check_key in schema.get(key).keys():
-                check_value = schema.get(key).get(check_key)
-
-                # key must have an object type value if it's not a reserved one
-                if type(check_value) is not dict and check_key not in util.reserved_key.all_keys().keys():
-                    logger.error(f"key (bold)(blue){check_key}(end) should have object value in (bold){path}(end).")
-
-                # data-type must be defined in parent object when the immediate child is an object
-                elif type(check_value) is dict and not {"object", "object_array", "string_array"}.intersection(
-                        schema.get(key).data_type.split("|")):
-                    logger.error(
-                        f"(bold)(blue){path}(end) should have one of the following data type: (bold)object, object_array, string_array, integer_array, float_array, bool_array(end)")
-
-        # when binding is enable then the source object can't have any sibling keys
-        if type(schema.get(key)) is dict and schema.get(key) is not None and schema.get(key).get(
-                "__bind__") is not None:
-            schema_path = re.sub(r"[\[0-9\]]", "", path)
-            for invalid_key in [found_key for found_key in schema.get(key).keys() if found_key != "__bind__"]:
-                logger.error(
-                    f"this (bold)(red){invalid_key}(end) key can't be used when binding is enabled at (bold)(blue){schema_path}(end) in schema.")
-
-        if type(schema[key]) is dict:
-            child_schema = schema[key] if key in schema else schema
-
-            # schema has __bind__ key then ignore the field check
-            if child_schema.get("__bind__") is None:
-                analyze_schema(child_schema, f"{loc}.{key}")
-
-        # if type(schema[key]) is list:
-        #   for index, item in enumerate(schema[key]):
-        #      child_schema = schema[key] if type(item) is dict and key in schema else schema
-        #      analyze_schema(child_schema, item, f"{loc}.{key}[{index}]")
-
-
-def apply_doc_validation(key, schema, doc, path, index, doc_is_dynamic, doc_validation_output: OrderedSet):
+def apply_doc_unknown_keys_validation(key, schema, doc, path, index, doc_is_dynamic, output: OrderedSet):
     path = normalize_path(path, index, doc_is_dynamic)
     doc_value = doc.get(key)
     sch_value = schema.get(key) if schema is not None else None
 
     if key is None:
         for tgt_key in doc.keys():
-            apply_doc_validation(tgt_key, schema, doc, path, index, doc_is_dynamic, doc_validation_output)
+            apply_doc_unknown_keys_validation(tgt_key, schema, doc, path, index, doc_is_dynamic, output)
         return
 
-    for validation in doc_validation_set:
-        if schema is not None and validation.validate(key, schema, doc,
-                                                      normalize_path(f"{path}.{key}", index, doc_is_dynamic), index,
-                                                      doc_is_dynamic) is not None:
-            return
-        doc_validation_output.update(validation.get_set())
+    if schema is not None and validate_unknown_keys.validate(key, schema, doc,
+                                                  normalize_path(f"{path}.{key}", index, doc_is_dynamic), index,
+                                                  doc_is_dynamic) is not None:
+        return
+    output.update(validate_unknown_keys.get_set())
 
     if type(doc_value) is dict:
         for child_key in doc_value.keys():
-            apply_doc_validation(child_key, sch_value, doc_value,
+            apply_doc_unknown_keys_validation(child_key, sch_value, doc_value,
                                  normalize_path(f"{path}.{key}", index, doc_is_dynamic), index, doc_is_dynamic,
-                                 doc_validation_output)
+                                 output)
 
     if type(doc_value) is list:
         for i, item in enumerate(doc_value):
             if type(item) is dict:
                 for child_key in item.keys():
-                    apply_doc_validation(child_key, sch_value, item, f"{path}.{key}[{i}]", index, doc_is_dynamic,
-                                         doc_validation_output)
+                    apply_doc_unknown_keys_validation(child_key, sch_value, item, f"{path}.{key}[{i}]", index, doc_is_dynamic,
+                                         output)
+
+def apply_doc_validation(key, schema, doc, path, index, doc_is_dynamic, output: OrderedSet):
+    path = f"root[{index}]{path}" if doc_is_dynamic and "root" not in path else path
+    obj = schema.get(key)
+
+    if key is None:
+        for child_key in util.remove_reserved_keys(schema):
+            apply_doc_validation(child_key, schema, doc, path, index, doc_is_dynamic, output)
+        return
+
+    #if type(doc) is list:
+    #    for i, item in enumerate(doc):
+    #        if type(item) is dict:
+    #            apply_doc_validation(key, obj, item, f"{path}.{key}[{i}]", index, doc_is_dynamic, output)
+    #    return
+
+    for validation in doc_validation_set:
+        if validation.run(key, schema, doc,
+                          path, index,
+                          doc_is_dynamic) is not None:
+            return
+        output.update(validation.get_set())
+
+    if type(doc) is dict and obj.val_is_dict:
+
+        for child_key in util.remove_reserved_keys(obj.val):
+
+            doc_obj = doc.get(key)
+            if type(doc_obj) is dict:
+                apply_doc_validation(child_key, obj, doc_obj, f"{path}.{key}", index, doc_is_dynamic, output)
+
+            if type(doc_obj) is list:
+                for i, item in enumerate(doc_obj):
+                    if type(item) is dict:
+                        apply_doc_validation(child_key, obj, item, f"{path}.{key}[{i}]", index, doc_is_dynamic, output)
 
 
 def apply_schema_validation(key, schema, path, output: OrderedSet):
@@ -146,8 +120,7 @@ def prepare_schema(schema: dict, updated_schema: dict, key=None, defaults=None):
                 util.reserved_key.max_length: cfg.configs.get(cfg.max_length),
                 util.reserved_key.min_value: cfg.configs.get(cfg.min_value),
                 util.reserved_key.max_value: cfg.configs.get(cfg.max_value),
-                util.reserved_key.upper: cfg.configs.get(cfg.upper),
-                util.reserved_key.lower: cfg.configs.get(cfg.lower),
+                util.reserved_key.case: cfg.configs.get(cfg.case),
             }
 
         defaults = schema.get(util.reserved_key.defaults)
@@ -167,11 +140,8 @@ def prepare_schema(schema: dict, updated_schema: dict, key=None, defaults=None):
         if util.reserved_key.max_value not in defaults:
             defaults[util.reserved_key.max_value] = cfg.configs.get(cfg.max_value)
 
-        if util.reserved_key.upper not in defaults:
-            defaults[util.reserved_key.upper] = cfg.configs.get(cfg.upper)
-
-        if util.reserved_key.lower not in defaults:
-            defaults[util.reserved_key.lower] = cfg.configs.get(cfg.lower)
+        if util.reserved_key.case not in defaults:
+            defaults[util.reserved_key.case] = cfg.configs.get(cfg.case)
 
         for s_key in schema.keys():
             prepare_schema(schema, updated_schema, s_key, defaults)
@@ -180,7 +150,8 @@ def prepare_schema(schema: dict, updated_schema: dict, key=None, defaults=None):
     if type(schema.get(key)) is dict and key not in util.reserved_key.all_keys():
         field = schema[key].copy()
 
-        data_type = util.data_type_cls.string if field.get(util.reserved_key.data_type) is None else field.get(util.reserved_key.data_type)
+        data_type = util.data_type_cls.string if field.get(util.reserved_key.data_type) is None else field.get(
+            util.reserved_key.data_type)
         is_required = True if key.endswith("*") else False
         bypass = True if key.startswith("~") else False
 
@@ -189,21 +160,25 @@ def prepare_schema(schema: dict, updated_schema: dict, key=None, defaults=None):
         field[util.reserved_key.bypass] = bypass
 
         if data_type == util.data_type_cls.string:
-            allow_space = defaults.get(util.reserved_key.allow_space) if field.get(util.reserved_key.allow_space) is None else field.get(util.reserved_key.allow_space)
-            min_length = defaults.get(util.reserved_key.min_length) if field.get(util.reserved_key.min_length) is None else field.get(util.reserved_key.min_length)
-            max_length = defaults.get(util.reserved_key.max_length) if field.get(util.reserved_key.max_length) is None else field.get(util.reserved_key.max_length)
-            upper = defaults.get(util.reserved_key.upper) if field.get(util.reserved_key.upper) is None else field.get(util.reserved_key.upper)
-            lower = defaults.get(util.reserved_key.lower) if field.get(util.reserved_key.lower) is None else field.get(util.reserved_key.lower)
+            allow_space = defaults.get(util.reserved_key.allow_space) if field.get(
+                util.reserved_key.allow_space) is None else field.get(util.reserved_key.allow_space)
+            min_length = defaults.get(util.reserved_key.min_length) if field.get(
+                util.reserved_key.min_length) is None else field.get(util.reserved_key.min_length)
+            max_length = defaults.get(util.reserved_key.max_length) if field.get(
+                util.reserved_key.max_length) is None else field.get(util.reserved_key.max_length)
+            case = defaults.get(util.reserved_key.case) if field.get(util.reserved_key.case) is None else field.get(
+                util.reserved_key.case)
 
             field[util.reserved_key.allow_space] = allow_space
             field[util.reserved_key.min_length] = min_length
             field[util.reserved_key.max_length] = max_length
-            field[util.reserved_key.upper] = upper
-            field[util.reserved_key.lower] = lower
+            field[util.reserved_key.case] = case
 
         if data_type == util.data_type_cls.integer:
-            min_value = defaults.get(util.reserved_key.min_value) if field.get(util.reserved_key.min_value) is None else field.get(util.reserved_key.min_value)
-            max_value = defaults.get(util.reserved_key.max_value) if field.get(util.reserved_key.max_value) is None else field.get(util.reserved_key.max_value)
+            min_value = defaults.get(util.reserved_key.min_value) if field.get(
+                util.reserved_key.min_value) is None else field.get(util.reserved_key.min_value)
+            max_value = defaults.get(util.reserved_key.max_value) if field.get(
+                util.reserved_key.max_value) is None else field.get(util.reserved_key.max_value)
 
             field[util.reserved_key.min_value] = min_value
             field[util.reserved_key.max_value] = max_value
@@ -253,8 +228,11 @@ def validate_max_length(schema: dict, document: list, output_validation: Ordered
 
 def run_doc_validations(schema: dict, document, doc_validation_output: OrderedSet):
     # target document comprises on a single object
-    if type(document) is dict:
-        apply_doc_validation(None, schema_model.schema_doc, document, cfg.root_object_path, 0, False,
+    if type(document) is dict and len(document.keys()) > 0:
+        apply_doc_validation(None, schema_model.schema_doc, document, "", 0, False,
+                             doc_validation_output)
+
+        apply_doc_unknown_keys_validation(None, schema_model.schema_doc, document, "", 0, False,
                              doc_validation_output)
 
     # target document comprises on a array
@@ -267,7 +245,9 @@ def run_doc_validations(schema: dict, document, doc_validation_output: OrderedSe
         # when document is not dynamic
         elif type(document[0]) is dict:
             for index, doc in enumerate(document):
-                apply_doc_validation(None, schema_model.schema_doc, doc, cfg.root_object_path, index, True,
+                apply_doc_validation(None, schema_model.schema_doc, doc, "", index, True,
+                                     doc_validation_output)
+                apply_doc_unknown_keys_validation(None, schema_model.schema_doc, doc, "", index, True,
                                      doc_validation_output)
 
         elif type(document[0]) is str:
@@ -286,7 +266,7 @@ def run_doc_validations(schema: dict, document, doc_validation_output: OrderedSe
         validate_max_length(schema, document, doc_validation_output)
 
     else:
-        doc_validation_output.add(Error(ml.empty_document()))
+        doc_validation_output.add(Error(ml.empty_document_object()))
 
 
 def start_validation_process(schema: dict, document, schema_validation_output: OrderedSet,

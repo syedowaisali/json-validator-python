@@ -10,13 +10,12 @@ min_length = "min_length"
 max_length = "max_length"
 min_value = "min_value"
 max_value = "max_value"
-upper = "upper"
-lower = "lower"
+case = "case"
 
 configs = {
 
     # root object path
-    root_object_path: "main object",
+    root_object_path: "root object",
 
     # schema file postfix
     schema_file_postfix: "_schema",
@@ -49,8 +48,5 @@ configs = {
     max_value: None,
 
     # set default uppercase constraint
-    upper: False,
-
-    # set default lowercase constraint
-    lower: False
+    case: None
 }
