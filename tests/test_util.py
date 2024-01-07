@@ -1,4 +1,4 @@
-from utils.util import converted_type
+from jsvl.utils.util import converted_type
 
 
 def test_converted_type():

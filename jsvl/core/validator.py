@@ -108,10 +108,13 @@ def apply_schema_validation(key, schema, path, output: OrderedSet):
 
 
 def prepare_schema(schema: dict, updated_schema: dict, key=None, defaults=None):
+
+    dt = util.data_type_cls
+
     if key is None:
 
         if util.reserved_key.data_type not in schema.keys():
-            schema[util.reserved_key.data_type] = util.data_type_cls.object
+            schema[util.reserved_key.data_type] = dt.object
 
         if util.reserved_key.defaults not in schema.keys():
             schema[util.reserved_key.defaults] = {
@@ -150,7 +153,7 @@ def prepare_schema(schema: dict, updated_schema: dict, key=None, defaults=None):
     if type(schema.get(key)) is dict and key not in util.reserved_key.all_keys():
         field = schema[key].copy()
 
-        data_type = util.data_type_cls.string if field.get(util.reserved_key.data_type) is None else field.get(
+        data_type = dt.string if field.get(util.reserved_key.data_type) is None else field.get(
             util.reserved_key.data_type)
         is_required = True if key.endswith("*") else False
         bypass = True if key.startswith("~") else False
@@ -159,22 +162,25 @@ def prepare_schema(schema: dict, updated_schema: dict, key=None, defaults=None):
         field[util.reserved_key.required] = is_required
         field[util.reserved_key.bypass] = bypass
 
-        if data_type == util.data_type_cls.string:
+        min_length = defaults.get(util.reserved_key.min_length) if field.get(
+            util.reserved_key.min_length) is None else field.get(util.reserved_key.min_length)
+        max_length = defaults.get(util.reserved_key.max_length) if field.get(
+            util.reserved_key.max_length) is None else field.get(util.reserved_key.max_length)
+
+        if data_type == dt.string:
             allow_space = defaults.get(util.reserved_key.allow_space) if field.get(
                 util.reserved_key.allow_space) is None else field.get(util.reserved_key.allow_space)
-            min_length = defaults.get(util.reserved_key.min_length) if field.get(
-                util.reserved_key.min_length) is None else field.get(util.reserved_key.min_length)
-            max_length = defaults.get(util.reserved_key.max_length) if field.get(
-                util.reserved_key.max_length) is None else field.get(util.reserved_key.max_length)
             case = defaults.get(util.reserved_key.case) if field.get(util.reserved_key.case) is None else field.get(
                 util.reserved_key.case)
 
             field[util.reserved_key.allow_space] = allow_space
-            field[util.reserved_key.min_length] = min_length
-            field[util.reserved_key.max_length] = max_length
             field[util.reserved_key.case] = case
 
-        if data_type == util.data_type_cls.integer:
+        if data_type in [dt.string, dt.object_array,  dt.string_array, dt.integer_array, dt.float_array, dt.bool_array, dt.array]:
+            field[util.reserved_key.min_length] = min_length
+            field[util.reserved_key.max_length] = max_length
+
+        if data_type in [dt.integer, dt.float]:
             min_value = defaults.get(util.reserved_key.min_value) if field.get(
                 util.reserved_key.min_value) is None else field.get(util.reserved_key.min_value)
             max_value = defaults.get(util.reserved_key.max_value) if field.get(

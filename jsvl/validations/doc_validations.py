@@ -3,7 +3,7 @@ import re
 from abc import abstractmethod
 
 from jsvl.utils.message_list import ml
-from jsvl.utils.util import converted_type, combine, reserved_key, regex_keys
+from jsvl.utils.util import converted_type, combine, reserved_key, regex_keys, data_type_cls as dt
 from jsvl.validations.validation import Validation
 import jsvl.models.schema as schema_model
 
@@ -166,6 +166,38 @@ class ValidateTextSpace(DocValidation):
                 self.create_error(ml.space_error(self.full_path))
 
 
+class ValidateDocMinMaxLength(DocValidation):
+
+    def validate(self, key, schema, doc, path, index, doc_is_dynamic):
+        actual_value = doc.get(key)
+        obj = schema.get(key)
+
+        available_types = [dt.string, dt.object_array, dt.string_array, dt.integer_array, dt.float_array, dt.bool_array, dt.array]
+        if converted_type(actual_value) in available_types and obj.data_type in available_types:
+            actual_length = len(actual_value)
+            scope = "character(s)" if type(actual_value) is str else "item(s)"
+            if actual_length < obj.min_length:
+                self.create_error(ml.min_length_error(self.full_path, obj.min_length, actual_length, scope))
+
+            if obj.max_length is not None and actual_length > obj.max_length:
+                self.create_error(ml.max_length_error(self.full_path, obj.max_length, actual_length, scope))
+
+
+class ValidateDocMinMaxValue(DocValidation):
+
+    def validate(self, key, schema, doc, path, index, doc_is_dynamic):
+        actual_value = doc.get(key)
+        obj = schema.get(key)
+
+        available_types = [dt.integer, dt.float]
+        if converted_type(actual_value) in available_types and obj.data_type in available_types:
+            if actual_value < obj.min_value:
+                self.create_error(ml.min_value_error(self.full_path, obj.min_value, actual_value))
+
+            if obj.max_value is not None and actual_value > obj.max_value:
+                self.create_error(ml.max_value_error(self.full_path, obj.max_value, actual_value))
+
+
 # create validation set
 doc_validation_set = {
     ValidateRequiredFields(),
@@ -173,7 +205,9 @@ doc_validation_set = {
     ValidateDocBinding(),
     ValidateDocRegexBinding(),
     ValidateDocTextCase(),
-    ValidateTextSpace()
+    ValidateTextSpace(),
+    ValidateDocMinMaxLength(),
+    ValidateDocMinMaxValue()
 }
 
 validate_unknown_keys = ValidateUnknownKeys()

@@ -207,7 +207,7 @@ class ValidateMinMaxValue(SchemaValidation):
         # checking __min_length__ and __max_length__
         if reserved_key.min_length in schema.keys() and reserved_key.max_length in schema.keys():
             if type(schema_obj.val) is int and type(schema_obj.val) is int:
-                if schema.get(reserved_key.min_length).val >= schema.get(reserved_key.max_length).val:
+                if schema.get(reserved_key.min_length).val > schema.get(reserved_key.max_length).val:
                     self.create_error(
                         ml.invalid_min_max_value_or_length(f"{reserved_key.min_length}", f"{reserved_key.max_length}"))
 
@@ -227,14 +227,14 @@ class ValidateMinMaxValue(SchemaValidation):
             # checking __min_length__ and __max_length__
             if reserved_key.min_length in val.keys() and reserved_key.max_length in val.keys():
                 if type(schema_obj.min_length) is int and type(schema_obj.max_length) is int:
-                    if schema_obj.min_length >= schema_obj.max_length:
+                    if schema_obj.min_length > schema_obj.max_length:
                         self.create_error(ml.invalid_min_max_value_or_length(f"{path}.{reserved_key.min_length}",
                                                                              f"{path}.{reserved_key.max_length}"))
 
             # checking __min_value and __max_value__
             if reserved_key.min_value in val.keys() and reserved_key.max_value in val.keys():
                 if type(schema_obj.min_value) is int and type(schema_obj.max_value) is int:
-                    if schema_obj.min_value >= schema_obj.max_value:
+                    if schema_obj.min_value > schema_obj.max_value:
                         self.create_error(ml.invalid_min_max_value_or_length(f"{path}.{reserved_key.min_value}",
                                                                              f"{path}.{reserved_key.max_value}"))
 

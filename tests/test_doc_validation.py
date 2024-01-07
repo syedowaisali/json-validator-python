@@ -4,7 +4,8 @@ from jsvl.core.validator import validate
 from jsvl.utils.message_list import ml
 from jsvl.utils.util import data_type_cls, reserved_key
 from jsvl.validations.doc_validations import ValidateUnknownKeys, ValidateRequiredFields, ValidateDataEquality, \
-    ValidateDocBinding, ValidateDocRegexBinding, ValidateDocTextCase, ValidateTextSpace
+    ValidateDocBinding, ValidateDocRegexBinding, ValidateDocTextCase, ValidateTextSpace, ValidateDocMinMaxLength, \
+    ValidateDocMinMaxValue
 
 
 class TestDocValidation:
@@ -341,6 +342,74 @@ class TestDocValidation:
         ]
 
         self.__assert_result(actual_logs, expected_logs, 1)
+
+    def test_validate_min_max_length(self):
+        schema = {
+            "username": {
+                "__min_length__": 3,
+                "__max_length__": 10
+            },
+            "password": {
+                "__min_length__": 8
+            },
+            "tech": {
+                "__data_type__": "string_array",
+                "__max_length__": 3
+            },
+            "products": {
+                "__data_type__": "object_array",
+                "__min_length__": 2,
+                "__max_length__": 2,
+                "title*": {}
+            }
+        }
+
+        doc = {
+            "username": "to",
+            "password": "",
+            "tech": ["Android", "iOS", "Web", "Desktop"],
+            "products": [
+                {
+                    "title": "Product 1"
+                }
+            ]
+        }
+
+        actual_logs = self.__validate(schema, doc, validation=ValidateDocMinMaxLength)
+        expected_logs = [
+            ml.min_length_error("username", 3, 2, "character(s)"),
+            ml.min_length_error("password", 8, 0, "character(s)"),
+            ml.max_length_error("tech", 3, 4, "item(s)"),
+            ml.min_length_error("products", 2, 1, "item(s)"),
+        ]
+
+        self.__assert_result(actual_logs, expected_logs, 4)
+
+    def test_validate_min_max_value(self):
+        schema = {
+            "age": {
+                "__data_type__": "integer",
+                "__min_value__": 18,
+                "__max_value__": 60
+            },
+            "discount": {
+                "__data_type__": "float",
+                "__max_value__": 0.9
+            },
+        }
+
+        doc = {
+            "age": 17,
+            "discount": 1.1
+        }
+
+        actual_logs = self.__validate(schema, doc, validation=ValidateDocMinMaxValue)
+        expected_logs = [
+            ml.min_value_error("age", 18, 17),
+            ml.max_value_error("discount", 0.9, 1.1),
+        ]
+
+        self.__assert_result(actual_logs, expected_logs, 2)
 
     def __assert_result(self, actual_logs: list, expected_logs: list, expected_size: int = -1):
 

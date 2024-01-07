@@ -157,4 +157,18 @@ class MessageList:
     def space_error(self, path):
         return f"{path} cannot contain any space."
 
+    def min_length_error(self, path, expected, actual, scope):
+        return f"{path} should have minimum {expected} {scope}, but found {actual}."
+
+    def max_length_error(self, path, expected, actual, scope):
+        return f"{path} can have maximum {expected} {scope}, but found {actual}."
+
+
+    def min_value_error(self, path, expected, actual):
+        return f"{path} should have minimum {expected} value, but found {actual}."
+
+
+    def max_value_error(self, path, expected, actual):
+        return f"{path} can have maximum {expected} value, but found {actual}."
+
 ml = MessageList()
