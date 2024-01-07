@@ -213,11 +213,11 @@ def is_dynamic_document(document: list) -> bool:
     return is_dynamic_array
 
 
-def check_root_data_type(schema: dict, expected_type: str, output_validation: OrderedSet):
+def check_root_data_type(schema: dict, actual_data_type: str, output_validation: OrderedSet):
     data_type = schema.get(util.reserved_key.data_type)
 
-    if data_type != expected_type:
-        output_validation.add(Error(ml.unmatched_data_type(expected_type, data_type)))
+    if data_type != actual_data_type:
+        output_validation.add(Error(ml.unmatched_data_type(data_type, actual_data_type)))
 
 
 def validate_min_length(schema: dict, document: list, output_validation: OrderedSet):

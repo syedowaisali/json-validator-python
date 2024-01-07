@@ -115,7 +115,7 @@ class MessageList:
     # ----------------------------------------------------------------------
 
     def empty_document_object(self):
-        return "document shouldn't be empty object."
+        return "document shouldn't be empty."
 
     def unknown_key(self, path):
         return f"{path} is unknown key, remove it or add it in schema."
