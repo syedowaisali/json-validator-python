@@ -16,12 +16,32 @@ from jsvl.validations.schema_validations import schema_validation_set
 
 
 def normalize_path(path: str, index: int = 0, doc_is_dynamic: bool = False) -> str:
+    """
+    this method is response to normalize a path
+    :param path: actual path of json that needs to be normalized
+    :param index: using index in case the document is dynamic json object array
+    :param doc_is_dynamic: indicating that the document is not a single object it's a json object array
+    :return: normalized path
+    """
     path = path.replace(cfg.root_object_path, "") if len(path) > len(cfg.root_object_path) else path
     path = path[1:] if path.startswith(".") else path
     return f"root[{index}]{path}" if doc_is_dynamic and "root" not in path else path
 
 
 def apply_doc_unknown_keys_validation(key, schema, doc, path, index, doc_is_dynamic, output: OrderedSet):
+    """
+    this is a special method that is responsible for recursively detecting the unknown keys in schema i.e. keys
+    are defined in document but not defined in schema
+    :param key: current key
+    :param schema: schema json that will be used for validation
+    :param doc: document json
+    :param path: location of document which is currently being validated
+    :param index: when document is dynamic index will be used to segregate root path
+    :param doc_is_dynamic: indicating that the document is a json object array
+    :param output: will be used to store the validation output
+    :return: None
+    """
+
     path = normalize_path(path, index, doc_is_dynamic)
     doc_value = doc.get(key)
     sch_value = schema.get(key) if schema is not None else None
@@ -51,6 +71,17 @@ def apply_doc_unknown_keys_validation(key, schema, doc, path, index, doc_is_dyna
                                          output)
 
 def apply_doc_validation(key, schema, doc, path, index, doc_is_dynamic, output: OrderedSet):
+    """
+    this method will take core of validating the document by the given validation filter set
+    :param key: current json key
+    :param schema: schema json that will be used for validation
+    :param doc: document json that will be validated from schema
+    :param path: current location where the validation is being performed
+    :param index: when document is dynamic then index will be used to segregate the root path
+    :param doc_is_dynamic: indicating that the document is json object array
+    :param output: will be used to store the validation output
+    :return: None
+    """
     path = f"root[{index}]{path}" if doc_is_dynamic and "root" not in path else path
     obj = schema.get(key)
 
@@ -58,12 +89,6 @@ def apply_doc_validation(key, schema, doc, path, index, doc_is_dynamic, output: 
         for child_key in util.remove_reserved_keys(schema):
             apply_doc_validation(child_key, schema, doc, path, index, doc_is_dynamic, output)
         return
-
-    #if type(doc) is list:
-    #    for i, item in enumerate(doc):
-    #        if type(item) is dict:
-    #            apply_doc_validation(key, obj, item, f"{path}.{key}[{i}]", index, doc_is_dynamic, output)
-    #    return
 
     for validation in doc_validation_set:
         if validation.run(key, schema, doc,
@@ -87,6 +112,15 @@ def apply_doc_validation(key, schema, doc, path, index, doc_is_dynamic, output: 
 
 
 def apply_schema_validation(key, schema, path, output: OrderedSet):
+    """
+    this method will be used to validate the schema json by the given schema-validation set
+    :param key: current key
+    :param schema: this is the main schema object where all the validation will be performed
+    :param path: current location where the validation is being performed
+    :param output: will be used to store the validation output
+    :return: None
+    """
+
     path = normalize_path(path)
     obj = schema.get(key)
 
@@ -108,6 +142,14 @@ def apply_schema_validation(key, schema, path, output: OrderedSet):
 
 
 def prepare_schema(schema: dict, updated_schema: dict, key=None, defaults=None):
+    """
+    this method is responsible to convert the schema json to schema object
+    :param schema: actual schema json
+    :param updated_schema: hold all the converted schema json as object
+    :param key: current key
+    :param defaults: this is responsible to add default keys in schema object if not defined
+    :return: None
+    """
 
     dt = util.data_type_cls
 
@@ -203,6 +245,11 @@ def prepare_schema(schema: dict, updated_schema: dict, key=None, defaults=None):
 
 
 def is_dynamic_document(document: list) -> bool:
+    """
+    this method is responsible to check the document is a json object array
+    :param document: actual document that will be used for checking
+    :return: True or False
+    """
     first_item_type = type(document[0])
     is_dynamic_array = False
 
@@ -214,6 +261,14 @@ def is_dynamic_document(document: list) -> bool:
 
 
 def check_root_data_type(schema: dict, actual_data_type: str, output_validation: OrderedSet):
+    """
+    this method is responsible to comparing the root data type of schema for the given data type
+    :param schema: main schema json object
+    :param actual_data_type: give data type
+    :param output_validation: store the output if the data type are not same as given
+    :return: None
+    """
+
     data_type = schema.get(util.reserved_key.data_type)
 
     if data_type != actual_data_type:
@@ -221,18 +276,43 @@ def check_root_data_type(schema: dict, actual_data_type: str, output_validation:
 
 
 def validate_min_length(schema: dict, document: list, output_validation: OrderedSet):
+    """
+    this method is responsible to check the document minimum length
+    :param schema: main schema json object
+    :param document: list of documents
+    :param output_validation: store the validation output
+    :return: None
+    """
+
     min_length = schema.get(util.reserved_key.min_length)
     if min_length is not None and len(document) < int(min_length):
         output_validation.add(Error(ml.min_length_item(min_length)))
 
 
 def validate_max_length(schema: dict, document: list, output_validation: OrderedSet):
+    """
+    this method is responsible to check the document maximum length
+    :param schema: main schema json object
+    :param document: list of documents
+    :param output_validation: store the validation output
+    :return: None
+    """
+
     max_length = schema.get(util.reserved_key.max_length)
     if max_length is not None and len(document) > int(max_length):
         output_validation.add(Error(ml.max_length_item(max_length)))
 
 
 def run_doc_validations(schema: dict, document, doc_validation_output: OrderedSet):
+    """
+    this is responsible to analyze the document and perform some check based on the result
+    and then perform the validation based on the document type
+    :param schema: scheme json which will be used for validation
+    :param document: document json that will be analyzed
+    :param doc_validation_output: store the validation output result
+    :return: None
+    """
+
     # target document comprises on a single object
     if type(document) is dict and len(document.keys()) > 0:
         apply_doc_validation(None, schema_model.schema_doc, document, "", 0, False,
@@ -277,6 +357,16 @@ def run_doc_validations(schema: dict, document, doc_validation_output: OrderedSe
 
 def start_validation_process(schema: dict, document, schema_validation_output: OrderedSet,
                              doc_validation_output: OrderedSet):
+    """
+    this method is a starter for performing some pre-checks before the actual
+    validation process
+    :param schema: schema json object
+    :param document: unidentified document json
+    :param schema_validation_output: store the schema validation output result
+    :param doc_validation_output: store the document validation output result
+    :return: None
+    """
+
     updated_schema = {}
 
     # remove * from keys and add __required__ key in field object
@@ -306,6 +396,15 @@ def start_validation_process(schema: dict, document, schema_validation_output: O
 
 
 def execute(schema, document, out: list):
+    """
+    this method is responsible to validate and resolve the schema and document value before the
+    actual validation process
+    :param schema: unidentified schema
+    :param document: unidentified document
+    :param out: store all the schema and document validation output
+    :return: None
+    """
+
     for validation in schema_validation_set:
         validation.init_log_set()
 
@@ -317,11 +416,12 @@ def execute(schema, document, out: list):
 
     out.append(Output(schema_validation_output, doc_validation_output))
 
-    schema_is_valid_json = util.is_valid_json(schema)
+    schema_is_json = util.is_valid_json(schema)
     schema_is_file = util.is_valid_file(schema)
     schema_is_dir = util.is_valid_dir(schema)
+    schema_is_url = util.is_valid_url(schema)
 
-    if not schema_is_valid_json and not schema_is_file and not schema_is_dir:
+    if not schema_is_json and not schema_is_file and not schema_is_dir and not schema_is_url:
         schema_validation_output.add(Error(ml.invalid_provided_schema()))
         return
 
@@ -335,7 +435,7 @@ def execute(schema, document, out: list):
 
     list_of_schema = []
 
-    if schema_is_valid_json:
+    if schema_is_json:
         schema = util.get_as_json(schema)
         if type(schema) is not dict:
             schema_validation_output.add(Error(ml.schema_root_object()))
@@ -358,6 +458,14 @@ def execute(schema, document, out: list):
 
         for file in iglob(f"{schema}**/*.json", recursive=True):
             list_of_schema.append(file)
+
+    if schema_is_url:
+        schema_validation_output.add(Info(ml.loading_schema_from_url(schema)))
+        try:
+            content = util.read_content_from_url(schema)
+            return execute(content, document, out)
+        except Exception as err:
+            schema_validation_output.add(Error(err))
 
     list_of_doc = []
     if doc_is_valid_json:
@@ -413,7 +521,7 @@ def execute(schema, document, out: list):
 
         return
 
-    if type(document) is dict and (not schema_is_valid_json and not schema_is_file):
+    if type(document) is dict and (not schema_is_json and not schema_is_file):
         schema_validation_output.add(Error(ml.unmatch_provided_schema_and_doc()))
         return
 
@@ -425,6 +533,13 @@ def execute(schema, document, out: list):
 
 
 def validate(schema, document) -> List[Output]:
+    """
+    this is the entry for start the validation process
+    :param schema: unidentified schema
+    :param document: unidentified document
+    :return: list of the stored output result
+    """
+
     output = []
     execute(schema, document, output)
 

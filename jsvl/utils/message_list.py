@@ -107,8 +107,8 @@ class MessageList:
     def invalid_text_case(self, path, case):
         return f"{path} has invalid text case {case}, Valid cases are __upper__, __lower__, and __title__. Check available keywords here https://github.com/syedowaisali/json-validator-python?tab=readme-ov-file#available-keywords"
 
-    # def root_key_support(self):
-    #    return "root object data type could be object, object_array, string_array, integer_array, float_array or bool_array data type."
+    def loading_schema_from_url(self, url):
+        return f"Loading schema from URL: {url}"
 
     # ----------------------------------------------------------------------
     # document validation errors, warnings, info, success

@@ -101,7 +101,7 @@ def setup_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-v", "--version",
         action="version",
-        version="%(prog)s 1.0.8"
+        version="%(prog)s 1.1.0"
     )
 
     return parser

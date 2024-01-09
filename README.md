@@ -95,23 +95,23 @@ pip install jsvl -U
 ### Command line guide
 List of available commands
 
-| Command                              | Definition                                                                                                                                                                                                        |
-|--------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -s or --schema                       | Provide a schema json, file or a directory path for validating the documents.                                                                                                                                     | 
+| Command                              | Definition                                                                                                                                                                                                       |
+|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -s or --schema                       | Provide a schema as URL, JSON, file or a directory for validating the documents.                                                                                                                             | 
 | -d or --doc                          | Provide a document json, file or a directory path for validation.<br/>Note: if the schema source is a directory then provided schema should be in a directory and should have the same name with _schema postfix. |
-| -csfp or --change-schema-file-postfix | This argument will be used to change the schema file postfix name.                                                                                                                                                |
-| --disable-tags                       | Pass this flag to disable the output tags from logs.                                                                                                                                                              |
-| --plain-output                       | Pass this flag to remove the formatting from logs.                                                                                                                                                                |
-| --disable-logs                       | Pass this flag to disable all the logs.                                                                                                                                                                           |
-| --show-validation-source             | Pass this flag to show the validation class name with logs.                                                                                                                                                       |
-| --tight-space                        | Pass this flag to disable the allow_space globally.                                                                                                                                                               |
-| -ml or --min-length                  | Set the minimum length globally, default is 0.                                                                                                                                                                    |
-| -xl or --max-length                  | Set the maximum length globally, default is None.                                                                                                                                                                 |
-| -mv or --min-value                   | Set the minimum value globally, default is 0.                                                                                                                                                                     |
-| -xv or --max-value                   | Set the maximum value globally, default is None.                                                                                                                                                                  |
-| -c or --case                         | Set the text constraints globally, default is None. set [Available Keywords](#available-keywords)                                                                                                                 |
-| -v or --version                      | Check version.                                                                                                                                                                                                    |
-| -h or --help                         | For help.                                                                                                                                                                                                         |
+| -csfp or --change-schema-file-postfix | This argument will be used to change the schema file postfix name.                                                                                                                                               |
+| --disable-tags                       | Pass this flag to disable the output tags from logs.                                                                                                                                                             |
+| --plain-output                       | Pass this flag to remove the formatting from logs.                                                                                                                                                               |
+| --disable-logs                       | Pass this flag to disable all the logs.                                                                                                                                                                          |
+| --show-validation-source             | Pass this flag to show the validation class name with logs.                                                                                                                                                      |
+| --tight-space                        | Pass this flag to disable the allow_space globally.                                                                                                                                                              |
+| -ml or --min-length                  | Set the minimum length globally, default is 0.                                                                                                                                                                   |
+| -xl or --max-length                  | Set the maximum length globally, default is None.                                                                                                                                                                |
+| -mv or --min-value                   | Set the minimum value globally, default is 0.                                                                                                                                                                    |
+| -xv or --max-value                   | Set the maximum value globally, default is None.                                                                                                                                                                 |
+| -c or --case                         | Set the text constraints globally, default is None. set [Available Keywords](#available-keywords)                                                                                                                |
+| -v or --version                      | Check version.                                                                                                                                                                                                   |
+| -h or --help                         | For help.                                                                                                                                                                                                        |
 
 ### How to use
 **Command line**
@@ -119,6 +119,10 @@ List of available commands
 Validate a single json document.
 ```commandline
 ~$ jsvl -s /path/to/schema.json -d /path/to/document.json
+```
+Validate a single json document with URL.
+```commandline
+~$ jsvl -s http://www.yourdomain.com/schema.json -d /path/to/document.json
 ```
 Validate multiple documents with a single schema.
 ```commandline
@@ -139,12 +143,12 @@ Remove formatting from the output.
 
 ### Use in Project:
 
-Import **validator** function from **jsvl.core** module and validate the document with multiple options.
+Import **validate** function from **jsvl.core.validator** module and validate the document with multiple options.
 ```python
 from jsvl.core.validator import validate
 
 # schema json
-schema = "path/to/schema.json" or "path/to/all_schema_dir/" or {}
+schema = "http://www.youdomain.com/schema.json" or "path/to/schema.json" or "path/to/all_schema_dir/" or {}
 
 # document json
 document = "path/to/document.json" or "path/to/all_documents_dir/" or {} or []

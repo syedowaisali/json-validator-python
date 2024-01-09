@@ -1,6 +1,7 @@
 import json
 import os.path
 import re
+from urllib import request
 
 from jsvl.config import enable_validation_source, configs
 from jsvl.models.result import Success, Info, Warn, Error
@@ -166,6 +167,22 @@ def is_valid_text_case(case) -> bool:
 def read_file(file_path):
     with open(file_path, "r") as file:
         return file.read()
+
+def read_content_from_url(url: str) -> str:
+
+    with request.urlopen(url) as f:
+        return f.read().decode()
+
+def is_valid_url(path: str) -> bool:
+    regex = re.compile(
+        r'^(?:http|ftp)s?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+    return re.match(regex, path) is not None
 
 def is_valid_file(file_path: str) -> bool:
     return os.path.isfile(str(file_path))

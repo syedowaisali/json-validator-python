@@ -11,7 +11,7 @@ github_url = "https://github.com/syedowaisali/json-validator-python"
 
 setup(
     name="jsvl",
-    version="1.0.8",
+    version="1.1.0",
     url=github_url,
     project_urls={
         'Issues': f'{github_url}/issues',
