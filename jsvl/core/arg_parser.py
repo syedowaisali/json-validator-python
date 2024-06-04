@@ -21,7 +21,6 @@ def setup_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-d", "--doc",
         dest="doc",
-        required=True,
         type=str,
         help="Provide a document json, file or a directory path for validation."
     )

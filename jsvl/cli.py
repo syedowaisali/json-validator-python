@@ -7,7 +7,11 @@ def run_validation():
 
     parser = setup_arg_parser()
     args = parse(parser)
-    validator.validate(args.schema, args.doc)
+    if args.doc is not None:
+        validator.validate(args.schema, args.doc)
+    else:
+        out = []
+        validator.apply_only_validation(args.schema, out)
 
 
 # Press the green button in the gutter to run the script.

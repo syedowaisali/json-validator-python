@@ -547,3 +547,97 @@ def validate(schema, document) -> List[Output]:
         util.dump_log(output)
 
     return output
+
+
+def apply_only_validation(schema, out: list) -> List[Output]:
+    """
+    this method is responsible to validate and resolve the schema
+    :param schema: unidentified schema
+    :param out: store all the schema and document validation output
+    :return: None
+    """
+
+    for validation in schema_validation_set:
+        validation.init_log_set()
+
+    for validation in doc_validation_set:
+        validation.init_log_set()
+
+    schema_validation_output = OrderedSet()
+
+    out.append(Output(schema_validation_output,  OrderedSet()))
+
+    schema_is_json = util.is_valid_json(schema)
+    schema_is_file = util.is_valid_file(schema)
+    schema_is_dir = util.is_valid_dir(schema)
+    schema_is_url = util.is_valid_url(schema)
+
+    if not schema_is_json and not schema_is_file and not schema_is_dir and not schema_is_url:
+        schema_validation_output.add(Error(ml.invalid_provided_schema()))
+        return out
+
+    dict_of_schema = {}
+
+    if schema_is_json:
+        schema = util.get_as_json(schema)
+        if type(schema) is not dict:
+            schema_validation_output.add(Error(ml.schema_root_object()))
+            return out
+        dict_of_schema[None] = schema
+
+    if schema_is_file:
+        schema_validation_output.add(Info(ml.schema_file_loaded(schema)))
+        file_content = util.read_file(schema)
+        if not util.is_valid_json(file_content):
+            schema_validation_output.add(Error(ml.invalid_schema_file(schema)))
+            return out
+
+        schema = json.loads(file_content)
+        dict_of_schema[None] = schema
+
+    if schema_is_dir:
+        dict_of_schema.clear()
+        schema = schema if schema.endswith("/") else f"{schema}/"
+
+        for file in iglob(f"{schema}**/*.json", recursive=True):
+            file_content = util.read_file(file)
+            if not util.is_valid_json(file_content):
+                schema_validation_output.add(Error(ml.invalid_schema_file(schema)))
+                return out
+
+            schema_content = json.loads(file_content)
+            dict_of_schema[file] = schema_content
+
+    if len(dict_of_schema) == 0:
+        schema_validation_output.add(Error(ml.empty_schema()))
+        return out
+
+    for schema_key, schema_content in dict_of_schema.items():
+
+        if schema_key is not None:
+            schema_validation_output.append(Info(f"File: {schema_key}"))
+
+        updated_schema = {}
+
+        # remove * from keys and add __required__ key in field object
+        # remove ~ from keys and add __bypass__ key in field object
+        prepare_schema(schema_content, updated_schema)
+
+        schema_model.schema_doc = {}
+        for key in {key: val for (key, val) in updated_schema.items()}:
+            schema_model.schema_doc[key] = schema_model.Schema(key, updated_schema[key])
+
+        # adding separator and initial info
+        schema_validation_output.add(Info(ml.validating_schema()))
+
+        # validating schema first then document
+        apply_schema_validation(None, schema_model.schema_doc, cfg.root_object_path, schema_validation_output)
+
+        # if schema has no error then validate the target document with schema
+        if len([result for result in schema_validation_output if type(result) is Error]) == 0:
+            schema_validation_output.add(Success(ml.schema_successfully_validated()))
+
+    if cfg.configs.get(cfg.enable_output_logs):
+        util.dump_log(out)
+
+    return out
